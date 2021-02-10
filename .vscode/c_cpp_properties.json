@@ -1,0 +1,27 @@
+{
+    "env": {
+        "linux-conan": "${HOME}/.conan/data",
+        "linux-conan-packages": [
+            "${linux-conan}/gtest/1.10.0/_/_/package/3a7805e4bd67f61ce78cbd43faa928aafe32de35/include",
+            "${linux-conan}/gtest/1.10.0/_/_/package/c3115cba91b5b4c23af8f1f2cc6e734c021cc93f/include"
+        ]
+    },
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/external/libmstch/include",
+                "${linux-conan-packages}"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/g++-10",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+        }
+    ],
+    "version": 4
+}

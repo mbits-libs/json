@@ -1,0 +1,49 @@
+language: cpp
+
+os: linux
+dist: bionic
+
+addons:
+  apt:
+    sources: [ ubuntu-toolchain-r-test ]
+    packages: [ gcc-10, g++-10, curl ]
+
+install:
+  # setup g++ 10
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 90
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 90
+  - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-10 90
+  # install cmake
+  - CMAKE_VERSION="3.19"
+  - CMAKE_FULL="${CMAKE_VERSION}.2"
+  - pushd ~
+  - wget "https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_FULL}-Linux-x86_64.tar.gz"
+  - tar xf "cmake-${CMAKE_FULL}-Linux-x86_64.tar.gz"
+  - export PATH="${PWD}/cmake-${CMAKE_FULL}-Linux-x86_64/bin:${PATH}"
+  - popd
+  # Python + conan
+  - pyenv global 3.8
+  - python -m pip install -U conan
+  - export PATH=$PATH:`python -c "import site; import os; print(':'.join([os.path.abspath(os.path.join(dir, '..', '..', '..', 'bin')) for dir in site.getsitepackages()]))"`
+  - conan user
+  - conan profile new default --detect
+  - conan profile update settings.compiler.libcxx=libstdc++11 default
+
+before_script:
+  # verify installed versions
+  - which cmake
+  - cmake --version
+  - which g++
+  - g++ --version
+  - which gcov
+  - gcov --version
+  - which curl
+  - curl --version
+
+script:
+  - mkdir build
+  - cd build
+  - conan install .. --build missing -s build_type=Debug
+  - cmake -DCMAKE_BUILD_TYPE=Debug -DMSTCH_TESTING=ON -DMSTCH_INSTALL=OFF -DMSTCH_COVERALLS=ON -DMSTCH_COVERALLS_UPLOAD=ON ..
+  - make -j`nproc`
+  - make MSTCH_coveralls
