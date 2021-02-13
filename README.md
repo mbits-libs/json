@@ -92,11 +92,11 @@ node* from_json(map* value, std::string_view path);
 node const* from_json(map const* value, std::string_view path);
 ```
 
-Locates a `node` inside a possibly multi-level `map`. The `path` is a slash-separated list of keys. For instance, `from_json(dict, "key/subkey/subsubkey")` will lookup:
+Locates a `node` inside a possibly multi-level `map`. The `path` is a dot-separated list of keys. For instance, `from_json(dict, "object.subobject.property")` will lookup:
 
-- `"key"` in `dict`, then
-- `"subkey"` in `*cast<map>(dict["key"])`, finally
-- `"subsubkey"` in `*(*cast<map>(dict["key"]))["subkey"]`.
+- `"object"` in `dict`, then
+- `"subobject"` in `*cast<map>(dict["object"])`, finally
+- `"property"` in `*(*cast<map>(dict["object"]))["subobject"]`.
 
 Will return `nullptr` is it fails at eny of those steps.
 

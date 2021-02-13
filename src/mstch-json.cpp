@@ -47,7 +47,7 @@ namespace mstch {
 	typename copy_const<Map, node>::type* from_json_impl(Map& value,
 	                                                     std::string_view key) {
 		using ret_type = typename copy_const<Map, node>::type;
-		auto path = split_s('/', key);
+		auto path = split_s('.', key);
 
 		if (path.empty()) return nullptr;
 

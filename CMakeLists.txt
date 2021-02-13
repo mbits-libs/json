@@ -5,13 +5,12 @@ project (mstch-json
   LANGUAGES CXX)
 
 set(MSTCH_TESTING ON CACHE BOOL "Compile and/or run self-tests")
-set(MSTCH_PACKAGING OFF CACHE BOOL "Configure in order to be packaged; set to OFF if this is to be installed directly on an Unix machine")
 
 set(PROJECT_VERSION_SHORT "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(PROJECT_VERSION_STABILITY "")
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+conan_basic_setup()
 
 if (NOT CMAKE_CXX_STANDARD)
     if (MSTCH_TESTING)
@@ -24,7 +23,9 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
-find_package(GTest REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR})
+if (NOT TARGET GTest::gtest_main)
+  find_package(GTest REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR})
+endif()
 
 if (MSVC)
   set(ADDITIONAL_WALL_FLAGS
@@ -81,19 +82,6 @@ else()
   endif()
 endif()
 
-set(COVERALLS_PREFIX MSTCH_)
-set(MSTCH_COVERALLS_DIRS src include)
-find_package(Python3 COMPONENTS Interpreter REQUIRED)
-include(tools/coveralls/Coveralls.cmake)
-
-if (MSTCH_COVERALLS AND NOT MSTCH_TESTING)
-  message(FATAL_ERROR "Coveralls are useless without -DMSTCH_TESTING=ON")
-endif()
-
-if (MSTCH_TESTING)
-  enable_testing()
-endif()
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_subdirectory(external)
@@ -103,8 +91,7 @@ add_library(mstch-json STATIC
     include/mstch/mstch-json.hpp)
 set_target_properties(mstch-json PROPERTIES
 	VERSION ${PROJECT_VERSION}
-	SOVERSION ${PROJECT_VERSION_MAJOR}
-	FOLDER tangle)
+	SOVERSION ${PROJECT_VERSION_MAJOR})
 target_include_directories(mstch-json PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(mstch-json PRIVATE ${ADDITIONAL_WALL_FLAGS})
 target_link_libraries(mstch-json PUBLIC mstch)
@@ -114,6 +101,12 @@ target_link_libraries(mstch-json PUBLIC mstch)
 ##################################################################
 
 if (MSTCH_TESTING)
+set(COVERALLS_PREFIX MSTCH_)
+set(MSTCH_COVERALLS_DIRS src include)
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+include(tools/coveralls/Coveralls.cmake)
+
+enable_testing()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
@@ -121,7 +114,6 @@ file(GLOB TEST_SRCS tests/*.cc)
 
 add_executable(mstch-json-test ${TEST_SRCS})
 target_compile_options(mstch-json-test PRIVATE ${ADDITIONAL_WALL_FLAGS})
-set_target_properties(mstch-json-test PROPERTIES FOLDER tangle/tests)
 target_link_libraries(mstch-json-test mstch-json GTest::gtest_main)
 
 add_test(NAME mstch-json COMMAND mstch-json-test)
