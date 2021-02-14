@@ -1,8 +1,8 @@
 // Copyright (c) 2021 midnightBITS
 // This code is licensed under MIT license (see LICENSE for details)
 
-#include <gtest/gtest.h>
 #include "json_tests.hh"
+#include <gtest/gtest.h>
 
 using namespace std::literals;
 

@@ -8,4 +8,21 @@ IndentWidth:     4
 NamespaceIndentation: All
 TabWidth:        4
 UseTab:          ForIndentation
+# Order:
+#  1. MSTCH own headers
+#  2. local headers
+#  3. system C headers
+#  4. system C++ headers
+#  5. gtest / gmock / ...
+IncludeCategories: 
+  - Regex:           '^([<"]mstch/)'
+    Priority:        1
+  - Regex:           '^([<"](gtest|gmock|isl|json)/)'
+    Priority:        5
+  - Regex:           '^<.*\.h>'
+    Priority:        3
+  - Regex:           '^<.*'
+    Priority:        4
+  - Regex:           '.*'
+    Priority:        2
 ...

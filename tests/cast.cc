@@ -1,8 +1,8 @@
 // Copyright (c) 2021 midnightBITS
 // This code is licensed under MIT license (see LICENSE for details)
 
-#include <gtest/gtest.h>
 #include <mstch/mstch-json.hpp>
+#include <gtest/gtest.h>
 
 using namespace std::literals;
 

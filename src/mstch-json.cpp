@@ -1,10 +1,10 @@
 // Copyright (c) 2021 midnightBITS
 // This code is licensed under MIT license (see LICENSE for details)
 
+#include <mstch/mstch-json.hpp>
 #include <cmath>
 #include <iostream>
 #include <limits>
-#include <mstch/mstch-json.hpp>
 
 using namespace std::literals;
 

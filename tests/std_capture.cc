@@ -17,10 +17,10 @@
 #else
 #include <unistd.h>
 #endif
-#include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
+#include <cerrno>
 #include <chrono>
+#include <cstdio>
 
 using namespace std::literals;
 
