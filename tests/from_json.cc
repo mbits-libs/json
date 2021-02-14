@@ -118,7 +118,7 @@ namespace mstch::testing {
 	    },
 	    {
 	        "multi_level"sv,
-	        "key/sub1/sub2",
+	        "key.sub1.sub2",
 	        map{{
 	            "key",
 	            map{{
@@ -133,7 +133,7 @@ namespace mstch::testing {
 	    },
 	    {
 	        "multi_level_missing"sv,
-	        "key/sub1/sub2",
+	        "key.sub1.sub2",
 	        map{{
 	            "key",
 	            map{{
@@ -244,7 +244,7 @@ namespace mstch::testing {
 	    },
 	    {
 	        "multi_level"sv,
-	        "key/sub1/sub2",
+	        "key.sub1.sub2",
 	        map{{
 	            "key",
 	            map{{
@@ -256,7 +256,7 @@ namespace mstch::testing {
 	    },
 	    {
 	        "multi_level_nonstring"sv,
-	        "key/sub1/sub2",
+	        "key.sub1.sub2",
 	        map{{
 	            "key",
 	            map{{
@@ -267,7 +267,7 @@ namespace mstch::testing {
 	    },
 	    {
 	        "multi_level_missing"sv,
-	        "key/sub1/sub2",
+	        "key.sub1.sub2",
 	        map{{
 	            "key",
 	            map{{
