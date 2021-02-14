@@ -98,7 +98,7 @@ Locates a `node` inside a possibly multi-level `map`. The `path` is a dot-separa
 - `"subobject"` in `*cast<map>(dict["object"])`, finally
 - `"property"` in `*(*cast<map>(dict["object"]))["subobject"]`.
 
-Will return `nullptr` is it fails at eny of those steps.
+Will return `nullptr` is it fails at any of those steps.
 
 ```cpp
 node* from_json(node& value, std::string_view path);
