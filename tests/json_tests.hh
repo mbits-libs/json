@@ -716,12 +716,10 @@ namespace mstch::testing {
 			"n_string_with_trailing_garbage"sv,
 			"\"\"x"sv,
 		},
-#if 0
 		{
 			"n_structure_100000_opening_arrays",
 #include "n_structure_100000_opening_arrays.inc"
 		},
-#endif
 		{
 			"n_structure_angle_bracket_."sv,
 			"<.>"sv,
@@ -814,12 +812,10 @@ namespace mstch::testing {
 			"n_structure_open_array_comma"sv,
 			"[,"sv,
 		},
-#if 0
 		{
 			"n_structure_open_array_object",
 #include "n_structure_open_array_object.inc"
 		},
-#endif
 		{
 			"n_structure_open_array_open_object"sv,
 			"[{"sv,

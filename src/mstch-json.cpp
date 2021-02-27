@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <stack>
 
 using namespace std::literals;
 
@@ -84,15 +85,9 @@ namespace mstch {
 		using iterator = std::string_view::iterator;
 
 		void skip_ws(iterator&, iterator const&, read_mode mode);
-		node read_array(iterator&, iterator const&, read_mode mode);
-		node read_object(iterator&, iterator const&, read_mode mode);
-		std::optional<std::string> read_object_key(iterator&,
-		                                           iterator const&,
-		                                           read_mode mode);
 		node read_string(iterator&, iterator const&, read_mode mode);
 		node read_number(iterator&, iterator const&, read_mode mode);
 		node read_keyword(iterator&, iterator const&, read_mode mode);
-		node read_value(iterator&, iterator const&, read_mode mode);
 
 		void encode(uint32_t ch, std::string& target);
 
@@ -116,12 +111,131 @@ namespace mstch {
 				++it;
 		}
 
-		node read_value(iterator& it, iterator const& end, read_mode mode) {
+		struct reader_state;
+		enum class reader { push, replace };
+		struct reader_result {
+			std::variant<std::monostate,
+			             std::unique_ptr<reader_state>,
+			             mstch::node>
+			    result{};
+			reader result_mode{reader::push};
+
+			reader_result() = default;
+			reader_result(reader result_mode) : result_mode{result_mode} {}
+			reader_result(std::unique_ptr<reader_state> next_reader,
+			              reader result_mode = reader::push)
+			    : result{std::move(next_reader)}, result_mode{result_mode} {}
+			reader_result(mstch::node&& result,
+			              reader result_mode = reader::replace)
+			    : result{std::move(result)}, result_mode{result_mode} {}
+		};
+
+		struct reader_state {
+			virtual ~reader_state() = default;
+			virtual reader_result read(iterator& it,
+			                           iterator const& end,
+			                           read_mode mode,
+			                           node& val) = 0;
+
+		protected:
+			template <typename Reader>
+			static reader_result push() {
+				return {std::make_unique<Reader>()};
+			}
+			template <typename Reader>
+			static reader_result replace() {
+				return {std::make_unique<Reader>(), reader::replace};
+			}
+			static inline reader_result read_value();
+
+			/*
+			<before_loop>
+			while (<expression>) {
+			    <in_loop>
+			    // recursion
+			    auto val = read_value(...);
+			    <has_value>
+			}
+			<post_loop>
+			return node{std::move(result)};
+
+			becomes
+
+			while(true) {
+			    switch(state_) {
+			        case before_loop:
+			            <before_loop>
+			            break;
+
+			        case in_loop:
+			            <in_loop>
+			            // coroutine suspend?
+			            stage = has_value;
+			            return read_value();
+
+			        case has_value:
+			            // coroutine resume?
+			            <has_value>
+			            break;
+			    }
+			    if (!<expression>) break;
+			    stage = in_loop;
+			}
+			<past_loop>
+			return node{std::move(result)};
+			*/
+			enum while_stage { before_loop, in_loop, has_value };
+
+			while_stage stage{before_loop};
+		};
+
+		class value_reader final : public reader_state {
+		public:
+			reader_result read(iterator& it,
+			                   iterator const& end,
+			                   read_mode mode,
+			                   node& val) final;
+		};
+
+		inline reader_result reader_state::read_value() {
+			return push<value_reader>();
+		}
+
+		class array_reader final : public reader_state {
+		public:
+			reader_result read(iterator& it,
+			                   iterator const& end,
+			                   read_mode mode,
+			                   node& val) final;
+
+		private:
+			array result{};
+		};
+
+		class object_reader final : public reader_state {
+		public:
+			reader_result read(iterator& it,
+			                   iterator const& end,
+			                   read_mode mode,
+			                   node& val) final;
+
+		private:
+			std::optional<std::string> read_object_key(iterator& it,
+			                                           iterator const& end,
+			                                           read_mode mode);
+			map result{};
+			std::string current_key_{};
+		};
+
+		reader_result value_reader::read(iterator& it,
+		                                 iterator const& end,
+		                                 read_mode mode,
+		                                 node&) {
 			skip_ws(it, end, mode);
 			if (it == end) return {};
 
-			if (*it == '{') return read_object(it, end, mode);
-			if (*it == '[') return read_array(it, end, mode);
+			if (*it == '{') return replace<object_reader>();
+			if (*it == '[') return replace<array_reader>();
 			if (*it == '"' || *it == '\'') return read_string(it, end, mode);
 			if (std::isdigit(static_cast<uchar>(*it)) || *it == '-' ||
 			    *it == '+' || *it == '.')
@@ -129,27 +243,40 @@ namespace mstch {
 			return read_keyword(it, end, mode);
 		}
 
-		node read_array(iterator& it, iterator const& end, read_mode mode) {
-			skip_ws(it, end, mode);
-			if (it == end || *it != '[') return {};
-			++it;
+		reader_result array_reader::read(iterator& it,
+		                                 iterator const& end,
+		                                 read_mode mode,
+		                                 node& val) {
+			while (true) {
+				switch (stage) {
+					case before_loop:
+						skip_ws(it, end, mode);
+						if (it == end || *it != '[') return {};
+						++it;
 
-			skip_ws(it, end, mode);
+						skip_ws(it, end, mode);
+						break;
 
-			array result{};
-			while (it != end && *it != ']') {
-				skip_ws(it, end, mode);
-				auto val = read_value(it, end, mode);
-				if (!val.index()) return {};
-				result.push_back(std::move(val));
-				skip_ws(it, end, mode);
-				if (it == end) return {};
-				if (*it != ',') {
-					if (*it == ']') break;
-					return {};
+					case in_loop:
+						skip_ws(it, end, mode);
+						stage = has_value;
+						return read_value();
+
+					case has_value:
+						if (!val.index()) return {};
+						result.push_back(std::move(val));
+						skip_ws(it, end, mode);
+						if (it == end) return {};
+						if (*it != ',') {
+							if (*it == ']') break;
+							return {};
+						}
+						++it;
+						skip_ws(it, end, mode);
+						break;
 				}
-				++it;
-				skip_ws(it, end, mode);
+				if (it == end || *it == ']') break;
+				stage = in_loop;
 			}
 
 			if (it == end || *it != ']') return {};
@@ -157,33 +284,58 @@ namespace mstch {
 			return node{std::move(result)};
 		}
 
-		node read_object(iterator& it, iterator const& end, read_mode mode) {
-			skip_ws(it, end, mode);
-			if (it == end || *it != '{') return {};
-			++it;
+		reader_result object_reader::read(iterator& it,
+		                                  iterator const& end,
+		                                  read_mode mode,
+		                                  node& val) {
+			while (true) {
+				switch (stage) {
+					case before_loop:
+						skip_ws(it, end, mode);
+						if (it == end || *it != '{') return {};
+						++it;
 
-			skip_ws(it, end, mode);
+						skip_ws(it, end, mode);
+						break;
 
-			map result{};
-			while (it != end && *it != '}') {
-				skip_ws(it, end, mode);
-				auto key = read_object_key(it, end, mode);
-				if (!key) return {};
-				skip_ws(it, end, mode);
-				if (it == end || *it != ':') return {};
-				++it;
-				skip_ws(it, end, mode);
-				auto val = read_value(it, end, mode);
-				if (!val.index()) return {};
-				result[*key] = std::move(val);
-				skip_ws(it, end, mode);
-				if (it == end) return {};
-				if (*it != ',') {
-					if (*it == '}') break;
-					return {};
+					case in_loop:
+						skip_ws(it, end, mode);
+						{
+							auto key = read_object_key(it, end, mode);
+							if (!key) return {};
+							current_key_ = std::move(*key);
+						}
+						skip_ws(it, end, mode);
+						if (it == end || *it != ':') return {};
+						++it;
+						skip_ws(it, end, mode);
+						stage = has_value;
+						return read_value();
+
+					case has_value:
+						if (!val.index()) return {};
+						{
+							auto it = result.find(current_key_);
+							if (it != result.end() &&
+							    it->first == current_key_) {
+								it->second = std::move(val);
+							} else {
+								result.insert(it, {std::move(current_key_),
+								                   std::move(val)});
+							}
+						}
+						skip_ws(it, end, mode);
+						if (it == end) return {};
+						if (*it != ',') {
+							if (*it == '}') break;
+							return {};
+						}
+						++it;
+						skip_ws(it, end, mode);
+						break;
 				}
-				++it;
-				skip_ws(it, end, mode);
+				if (it == end || *it == '}') break;
+				stage = in_loop;
 			}
 
 			if (it == end || *it != '}') return {};
@@ -191,9 +343,10 @@ namespace mstch {
 			return node{std::move(result)};
 		}
 
-		std::optional<std::string> read_object_key(iterator& it,
-		                                           iterator const& end,
-		                                           read_mode mode) {
+		std::optional<std::string> object_reader::read_object_key(
+		    iterator& it,
+		    iterator const& end,
+		    read_mode mode) {
 			if (it == end) return {};
 			if (*it == '"' || *it == '\'') {
 				auto val = read_string(it, end, mode);
@@ -211,7 +364,7 @@ namespace mstch {
 					return std::to_string(std::get<long long>(val));
 				if (std::holds_alternative<double>(val))
 					return std::to_string(std::get<double>(val));
-				return {};
+				return std::nullopt;
 			}
 
 			auto start = iterator{it};
@@ -807,11 +960,37 @@ namespace mstch {
 			text = text.substr(skip.size());
 
 		auto it = text.begin();
-		auto value = read_value(it, text.end(), mode);
+		auto end = text.end();
+
+		std::stack<std::unique_ptr<reader_state>> stack;
+		stack.push(std::make_unique<value_reader>());
+
+		node value;
+		while (!stack.empty()) {
+			auto reader = std::move(stack.top());
+			stack.pop();
+			auto [result, result_mode] = reader->read(it, end, mode, value);
+			value = {};
+
+			if (std::holds_alternative<std::monostate>(result)) return {};
+
+			if (std::holds_alternative<std::unique_ptr<reader_state>>(result)) {
+				auto& next = std::get<std::unique_ptr<reader_state>>(result);
+				if (result_mode != mstch::reader::replace)
+					stack.push(std::move(reader));
+
+				stack.push(std::move(next));
+				continue;
+			}
+
+			value = std::move(std::get<node>(result));
+		}
+
 		if (mode == read_mode::strict) {
 			skip_ws(it, text.end(), mode);
 			if (it != text.end()) return {};
 		}
+
 		return value;
 	}
 
