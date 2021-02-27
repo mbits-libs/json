@@ -595,7 +595,6 @@ namespace mstch {
 			auto& [value, power] = result;
 
 			bool read = false;
-			auto const start = it;
 			while (it != end) {
 				auto const digit = hex_digit(*it);
 				if (digit > 9) {
