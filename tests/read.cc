@@ -48,6 +48,26 @@ namespace mstch::testing {
 			          << "Actual: " << actual << '\n';
 	}
 
+	node_testcase const json_additional_values[] = {
+	    {
+	        "file_with_negative_zero"sv,
+	        "-0"sv,
+	        0ll,
+	    },
+	    {
+	        "illegal_string_continuation_A"sv,
+	        "\"string with \\\r\n continuation\""sv,
+	    },
+	    {
+	        "illegal_string_continuation_B"sv,
+	        "\"string with \\\n\r continuation\""sv,
+	    },
+	    {
+	        "illegal_string_vertical_tab"sv,
+	        "\"string with \\v\""sv,
+	    },
+	};
+
 	node_testcase const js_values[] = {
 	    {
 	        "structure_whitespace_formfeed"sv,
@@ -165,14 +185,69 @@ namespace mstch::testing {
 	        "{+a: undefined}"sv,
 	    },
 	    {
+	        "structure_with_faulty_non_string_keys_2"sv,
+	        "{12a: undefined}"sv,
+	    },
+	    {
+	        "structure_with_faulty_non_string_keys_3"sv,
+	        "{12.a: undefined}"sv,
+	    },
+	    {
 	        "structure_with_faulty_value"sv,
 	        "{code: unknown}"sv,
+	    },
+	    {
+	        "legal_string_continuation_A"sv,
+	        "\"string with \\\r\n continuation\""sv,
+	        "string with  continuation"s,
+	    },
+	    {
+	        "legal_string_continuation_B"sv,
+	        "\"string with \\\n\r continuation\""sv,
+	        "string with  continuation"s,
+	    },
+	    {
+	        "legal_string_vertical_tab"sv,
+	        "\"string with \\v\""sv,
+	        "string with \v"s,
+	    },
+	    {
+	        "broken_file_string_with_bad_hex_1st"sv,
+	        "'\\x"sv,
+	    },
+	    {
+	        "broken_file_string_with_bad_hex_2nd"sv,
+	        "'\\x0"sv,
+	    },
+	    {
+	        "broken_file_string_with_bad_unicode"sv,
+	        "'\\u"sv,
+	    },
+	    {
+	        "broken_file_string_with_bad_unicode_braces"sv,
+	        "'\\u{baddigit}"sv,
+	    },
+	    {
+	        "broken_file_bad_number"sv,
+	        "0x"sv,
+	    },
+	    {
+	        "broken_file_array_with_nonexistent_negative"sv,
+	        "['there will be number next', -"sv,
+	    },
+	    {
+	        "y_number_neg_real_without_int_part"sv,
+	        "[-.123]"sv,
+	        array{-.123},
 	    },
 	};
 
 	INSTANTIATE_TEST_SUITE_P(JSONTestSuite,
 	                         json_read_test,
 	                         ::testing::ValuesIn(github_com_nst_JSONTestSuite));
+	INSTANTIATE_TEST_SUITE_P(additional,
+	                         json_read_test,
+	                         ::testing::ValuesIn(json_additional_values));
 	INSTANTIATE_TEST_SUITE_P(JavaScript,
 	                         js_read_test,
 	                         ::testing::ValuesIn(js_values));

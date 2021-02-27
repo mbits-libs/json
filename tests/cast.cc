@@ -72,4 +72,16 @@ namespace mstch::testing {
 		ASSERT_EQ(nullptr, cast<std::string>(value, "key"));
 		ASSERT_EQ(nullptr, cast<double>(value, "key"));
 	}
+
+	TEST(cast, cast_from_null) {
+		mstch::node* nil = nullptr;
+		auto actual = mstch::cast_from_json<mstch::map>(nil, "");
+		ASSERT_EQ(nullptr, actual);
+	}
+
+	TEST(cast, cast_from_const_null) {
+		mstch::node const* nil = nullptr;
+		auto actual = mstch::cast_from_json<mstch::map>(nil, "");
+		ASSERT_EQ(nullptr, actual);
+	}
 }  // namespace mstch::testing

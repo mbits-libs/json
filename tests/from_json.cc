@@ -144,6 +144,17 @@ namespace mstch::testing {
 	            }},
 	        }},
 	    },
+	    {
+	        "multi_level_not_map"sv,
+	        "key.sub1.sub2",
+	        map{{
+	            "key",
+	            map{{
+	                "sub1",
+	                array{"sub2", 3.14, "unused", 2.71},
+	            }},
+	        }},
+	    },
 	};
 
 	INSTANTIATE_TEST_SUITE_P(samples, from_json, ::testing::ValuesIn(tests));
