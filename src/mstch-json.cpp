@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include <mstch/mstch-json.hpp>
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -49,8 +50,6 @@ namespace mstch {
 	                                                     std::string_view key) {
 		using ret_type = typename copy_const<Map, node>::type;
 		auto path = split_s('.', key);
-
-		if (path.empty()) return nullptr;
 
 		auto it = value.find(path.front());
 		if (it == value.end()) return nullptr;
@@ -250,8 +249,8 @@ namespace mstch {
 			while (true) {
 				switch (stage) {
 					case before_loop:
-						skip_ws(it, end, mode);
-						if (it == end || *it != '[') return {};
+						// sanity check for value_reader::read
+						assert(it != end && *it == '[');
 						++it;
 
 						skip_ws(it, end, mode);
@@ -291,15 +290,16 @@ namespace mstch {
 			while (true) {
 				switch (stage) {
 					case before_loop:
-						skip_ws(it, end, mode);
-						if (it == end || *it != '{') return {};
+						// sanity check for value_reader::read
+						assert(it != end && *it == '{');
 						++it;
 
 						skip_ws(it, end, mode);
 						break;
 
 					case in_loop:
-						skip_ws(it, end, mode);
+						// this comment forbids the formatter from placing open
+						// bracket at case line
 						{
 							auto key = read_object_key(it, end, mode);
 							if (!key) return {};
@@ -347,7 +347,11 @@ namespace mstch {
 		    iterator& it,
 		    iterator const& end,
 		    read_mode mode) {
-			if (it == end) return {};
+			// there were skip_ws calls at the end of before_loop and has_value,
+			// both of which are guarded against it == end. For now, just sanity
+			// check for object_reader::read
+			assert(it != end);
+
 			if (*it == '"' || *it == '\'') {
 				auto val = read_string(it, end, mode);
 				if (std::holds_alternative<std::string>(val))
@@ -413,7 +417,9 @@ namespace mstch {
 		}
 
 		unsigned hex_escape(iterator& it, iterator const& end) {
-			if (*it != 'x') return 256;
+			// sanity check for read_string
+			assert(*it == 'x');
+
 			++it;
 			auto const result = hex_digit(it, end);
 			if (result == 16) return 256;
@@ -425,7 +431,9 @@ namespace mstch {
 
 		uint32_t unicode_escape(iterator& it, iterator const& end) {
 			static constexpr auto max = std::numeric_limits<uint32_t>::max();
-			if (*it != 'u') return max;
+			// sanity check for read_string
+			assert(*it == 'u');
+
 			++it;
 			if (it == end) return max;
 			if (*it == '{') {
@@ -454,9 +462,10 @@ namespace mstch {
 		}
 
 		node read_string(iterator& it, iterator const& end, read_mode mode) {
-			skip_ws(it, end, mode);
-			if (it == end) return {};
-			if (*it != '"' && *it != '\'') return {};
+			// sanity check for value_reader::read and
+			// object_reader::read_object_key
+			assert(it != end && (*it == '"' || *it == '\''));
+
 			if (mode == read_mode::strict && *it == '\'') return {};
 
 			auto tmplt = *it;
@@ -578,8 +587,10 @@ namespace mstch {
 			return result * neg;
 		}
 
-		std::optional<std::pair<unsigned long long, unsigned>>
-		read_digits(iterator& it, iterator const& end, read_mode mode) {
+		std::optional<std::pair<unsigned long long, unsigned>> read_digits(
+		    iterator& it,
+		    iterator const& end,
+		    bool strict_mode = true) {
 			std::pair<unsigned long long, unsigned> result{};
 			auto& [value, power] = result;
 
@@ -588,8 +599,8 @@ namespace mstch {
 			while (it != end) {
 				auto const digit = hex_digit(*it);
 				if (digit > 9) {
-					if (read) break;
-					return std::nullopt;
+					if (!read && strict_mode) return std::nullopt;
+					break;
 				}
 				read = true;
 				++it;
@@ -599,14 +610,17 @@ namespace mstch {
 				value += digit;
 				if (overflow_guard > value) return std::nullopt;
 			}
-			if (mode == read_mode::strict && start == it) return std::nullopt;
 
 			return result;
 		}
 
 		node read_number(iterator& it, iterator const& end, read_mode mode) {
+			// sanity check for value_reader::read and
+			// object_reader::read_object_key
+			assert(it != end);
+
 			int neg = 1;
-			if (it == end) return {};
+
 			if (*it == '+') {
 				if (mode == read_mode::strict) return {};
 				++it;
@@ -661,7 +675,7 @@ namespace mstch {
 				}
 			}
 
-			auto const whole = read_digits(it, end, mode);
+			auto const whole = read_digits(it, end, mode == read_mode::strict);
 			if (!whole) return {};
 
 			if (it == end || (*it != '.' && *it != 'e' && *it != 'E'))
@@ -670,7 +684,7 @@ namespace mstch {
 			std::pair<unsigned long long, unsigned> fraction{};
 			if (*it == '.') {
 				++it;
-				auto const fraction_ = read_digits(it, end, mode);
+				auto const fraction_ = read_digits(it, end);
 				if (!fraction_) return {};
 
 				if (it == end || (*it != 'e' && *it != 'E')) {
@@ -693,7 +707,7 @@ namespace mstch {
 				++it;
 			}
 
-			auto const exponent = read_digits(it, end, mode);
+			auto const exponent = read_digits(it, end);
 			if (!exponent) return {};
 
 			auto const int_exp =
@@ -803,15 +817,13 @@ namespace mstch {
 
 			void operator()(long long value) const {
 				char buffer[200];
-				auto length = sprintf(buffer, "%lld", value);
-				if (length < 0) length = 0;
+				auto length = snprintf(buffer, sizeof(buffer), "%lld", value);
 				printer.write({buffer, static_cast<size_t>(length)});
 			}
 
 			void operator()(double value) const {
 				char buffer[200];
-				auto length = sprintf(buffer, "%g", value);
-				if (length < 0) length = 0;
+				auto length = snprintf(buffer, sizeof(buffer), "%g", value);
 				printer.write({buffer, static_cast<size_t>(length)});
 			}
 
