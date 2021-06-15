@@ -23,8 +23,10 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
+if (MSTCH_TESTING)
 if (NOT TARGET GTest::gtest_main)
   find_package(GTest REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR})
+endif()
 endif()
 
 if (MSVC)
