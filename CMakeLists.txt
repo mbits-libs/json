@@ -13,12 +13,7 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
 if (NOT CMAKE_CXX_STANDARD)
-    if (JSON_TESTING)
-        # Google test uses result_of
-        set(CMAKE_CXX_STANDARD 17)
-    else()
-        set(CMAKE_CXX_STANDARD 20)
-    endif()
+    set(CMAKE_CXX_STANDARD 20)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
