@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "std_capture.hh"
+#include <cstdint>
 #ifdef _MSC_VER
 #include <io.h>
 #define popen _popen
@@ -14,6 +15,7 @@
 #define pipe _pipe
 #define read _read
 #define eof _eof
+using ssize_t = intptr_t;
 #else
 #include <unistd.h>
 #endif
@@ -107,12 +109,15 @@ void std_capture::append() {
 	while (true) {
 		ret = read(pipe_[READ], buffer, sizeof(buffer));
 		auto const err = errno;
-		if (ret < 0 && (err == EINTR || err == EBUSY || err == EAGAIN)) {
-			std::this_thread::sleep_for(10ms);
-			continue;
+		if (ret < 0) {
+			if (err == EINTR || err == EBUSY || err == EAGAIN) {
+				std::this_thread::sleep_for(10ms);
+				continue;
+			}
+			return;
 		}
 		break;
 	}
 
-	buffer_.append(buffer, static_cast<size_t>(ret));
+	buffer_.append(buffer, ret);
 }

@@ -315,13 +315,13 @@ namespace mstch {
 					case has_value:
 						if (!val.index()) return {};
 						{
-							auto it = result.find(current_key_);
-							if (it != result.end() &&
-							    it->first == current_key_) {
-								it->second = std::move(val);
+							auto innerIt = result.find(current_key_);
+							if (innerIt != result.end() &&
+							    innerIt->first == current_key_) {
+								innerIt->second = std::move(val);
 							} else {
-								result.insert(it, {std::move(current_key_),
-								                   std::move(val)});
+								result.insert(innerIt, {std::move(current_key_),
+								                        std::move(val)});
 							}
 						}
 						skip_ws(it, end, mode);
@@ -725,10 +725,13 @@ namespace mstch {
 		}
 
 		node read_keyword(iterator& it, iterator const& end, read_mode mode) {
-			auto start = &*it;
+			if (it == end) {
+				return {};
+			}
+			auto start = it;
 			while (it != end && std::isalpha(static_cast<uchar>(*it)))
 				++it;
-			std::string_view view{start, static_cast<size_t>(&*it - start)};
+			std::string_view view{&*start, static_cast<size_t>(it - start)};
 			if (view == "null") return nullptr;
 			if (view == "true") return true;
 			if (view == "false") return false;

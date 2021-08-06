@@ -106,11 +106,16 @@ namespace mstch::testing {
 				    }
 				    out << '}';
 			    } else if constexpr (std::is_same_v<type, mstch::array>) {
-				    out << "mstch::array{";
+				    bool first{true};
+				    out << "mk_array(";
 				    for (auto const& subvalue : value) {
-					    out << subvalue << ',';
+					    if (first)
+						    first = false;
+					    else
+						    out << ',';
+					    out << subvalue;
 				    }
-				    out << '}';
+				    out << ')';
 			    };
 		    },
 		    value_node.base());

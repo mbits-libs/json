@@ -52,12 +52,12 @@ namespace mstch::testing {
 	    },
 	    {
 	        "array"sv,
-	        array{0, 1ll, 2.5, nullptr, true, false},
+	        array{0ll, 1ll, 2.5, nullptr, true, false},
 	    },
 	    {
 	        "map"sv,
 	        map{
-	            {"zero", 0},
+	            {"zero", 0ll},
 	            {"integer", 1ll},
 	            {"floating", 2.5},
 	            {"nullptr", nullptr},
@@ -67,7 +67,7 @@ namespace mstch::testing {
 	            {
 	                "map2",
 	                map{
-	                    {"zero", 0},
+	                    {"zero", 0ll},
 	                    {"integer", 1ll},
 	                    {"floating", 2.5},
 	                    {"nullptr", nullptr},

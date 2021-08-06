@@ -1,10 +1,10 @@
 cmake_minimum_required (VERSION 3.10)
-project (mstch-json
+project (json
   VERSION 0.1.0
-  DESCRIPTION "JSON implemented in terms of no1msd's libmstch."
+  DESCRIPTION "JSON implemented in terms of C++17 variant."
   LANGUAGES CXX)
 
-set(MSTCH_TESTING ON CACHE BOOL "Compile and/or run self-tests")
+set(JSON_TESTING ON CACHE BOOL "Compile and/or run self-tests")
 
 set(PROJECT_VERSION_SHORT "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(PROJECT_VERSION_STABILITY "")
@@ -13,7 +13,7 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
 if (NOT CMAKE_CXX_STANDARD)
-    if (MSTCH_TESTING)
+    if (JSON_TESTING)
         # Google test uses result_of
         set(CMAKE_CXX_STANDARD 17)
     else()
@@ -23,7 +23,7 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
-if (MSTCH_TESTING)
+if (JSON_TESTING)
 if (NOT TARGET GTest::gtest_main)
   find_package(GTest REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR})
 endif()
@@ -88,23 +88,23 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_subdirectory(external)
 
-add_library(mstch-json STATIC
+add_library(json STATIC
     src/mstch-json.cpp
     include/mstch/mstch-json.hpp)
-set_target_properties(mstch-json PROPERTIES
+set_target_properties(json PROPERTIES
 	VERSION ${PROJECT_VERSION}
 	SOVERSION ${PROJECT_VERSION_MAJOR})
-target_include_directories(mstch-json PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_options(mstch-json PRIVATE ${ADDITIONAL_WALL_FLAGS})
-target_link_libraries(mstch-json PUBLIC mstch)
+target_include_directories(json PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_options(json PRIVATE ${ADDITIONAL_WALL_FLAGS})
+target_link_libraries(json PUBLIC mstch)
 
 ##################################################################
 ##  TESTING
 ##################################################################
 
-if (MSTCH_TESTING)
-set(COVERALLS_PREFIX MSTCH_)
-set(MSTCH_COVERALLS_DIRS src include)
+if (JSON_TESTING)
+set(COVERALLS_PREFIX JSON_)
+set(JSON_COVERALLS_DIRS src include)
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 include(tools/coveralls/Coveralls.cmake)
 
@@ -114,10 +114,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 file(GLOB TEST_SRCS tests/*.cc)
 
-add_executable(mstch-json-test ${TEST_SRCS})
-target_compile_options(mstch-json-test PRIVATE ${ADDITIONAL_WALL_FLAGS})
-target_link_libraries(mstch-json-test mstch-json GTest::gtest_main)
+add_executable(json-test ${TEST_SRCS})
+target_compile_options(json-test PRIVATE ${ADDITIONAL_WALL_FLAGS})
+target_link_libraries(json-test json GTest::gtest_main)
 
-add_test(NAME mstch-json COMMAND mstch-json-test)
+add_test(NAME json COMMAND json-test)
 
 endif()
