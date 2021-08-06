@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "mstch-json.hh"
+#include "json.hh"
 
 namespace mstch::testing {
 	template <typename... Items>

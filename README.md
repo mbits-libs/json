@@ -9,7 +9,7 @@ Open-source library implementing JSON parser and writer in terms of [Mustache](h
 ## Synopsis
 
 ```cpp
-#include <mstch/mstch-json.hpp>
+#include <json/json.hpp>
 ```
 
 ### mstch::read_json

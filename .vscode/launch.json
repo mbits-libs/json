@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/mstch-json-test",
+            "program": "${workspaceFolder}/build/bin/json-test",
             "args": ["--gtest_filter=*"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

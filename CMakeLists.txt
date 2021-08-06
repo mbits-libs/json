@@ -89,8 +89,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 add_subdirectory(external)
 
 add_library(json STATIC
-    src/mstch-json.cpp
-    include/mstch/mstch-json.hpp)
+    src/json.cpp
+    include/json/json.hpp)
 set_target_properties(json PROPERTIES
 	VERSION ${PROJECT_VERSION}
 	SOVERSION ${PROJECT_VERSION_MAJOR})
