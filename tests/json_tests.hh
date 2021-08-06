@@ -5,10 +5,10 @@
 
 #include "json.hh"
 
-namespace mstch::testing {
+namespace json::testing {
 	template <typename... Items>
-	static inline mstch::node mk_array(Items&&... items) {
-		return mstch::array{std::forward<Items>(items)...};
+	static inline json::node mk_array(Items&&... items) {
+		return json::array{std::forward<Items>(items)...};
 	}
 
 	node_testcase const github_com_nst_JSONTestSuite[] = {
@@ -55,105 +55,105 @@ namespace mstch::testing {
 		{
 			"i_object_key_lone_2nd_surrogate"sv,
 			"{\"\\uDFAA\":0}"sv,
-			mstch::map{{"\357\277\275",0ll},},
+			json::map{{"\357\277\275",0ll},},
 		},
 		{
 			"i_string_1st_surrogate_but_2nd_missing"sv,
 			"[\"\\uDADA\"]"sv,
-			mstch::array{"\357\277\275",},
+			json::array{"\357\277\275",},
 		},
 		{
 			"i_string_1st_valid_surrogate_2nd_invalid"sv,
 			"[\"\\uD888\\u1234\"]"sv,
-			mstch::array{"\357\277\275\341\210\264",},
+			json::array{"\357\277\275\341\210\264",},
 		},
 		{
 			"i_string_incomplete_surrogates_escape_valid"sv,
 			"[\"\\uD800\\uD800\\n\"]"sv,
-			mstch::array{"\357\277\275\357\277\275\n",},
+			json::array{"\357\277\275\357\277\275\n",},
 		},
 		{
 			"i_string_incomplete_surrogate_and_escape_valid"sv,
 			"[\"\\uD800\\n\"]"sv,
-			mstch::array{"\357\277\275\n",},
+			json::array{"\357\277\275\n",},
 		},
 		{
 			"i_string_incomplete_surrogate_pair"sv,
 			"[\"\\uDd1ea\"]"sv,
-			mstch::array{"\357\277\275a",},
+			json::array{"\357\277\275a",},
 		},
 		{
 			"i_string_invalid_lonely_surrogate"sv,
 			"[\"\\ud800\"]"sv,
-			mstch::array{"\357\277\275",},
+			json::array{"\357\277\275",},
 		},
 		{
 			"i_string_invalid_surrogate"sv,
 			"[\"\\ud800abc\"]"sv,
-			mstch::array{"\357\277\275abc",},
+			json::array{"\357\277\275abc",},
 		},
 		{
 			"i_string_invalid_utf-8"sv,
 			"[\"\377\"]"sv,
-			mstch::array{"\377",},
+			json::array{"\377",},
 		},
 		{
 			"i_string_inverted_surrogates_U+1D11E"sv,
 			"[\"\\uDd1e\\uD834\"]"sv,
-			mstch::array{"\357\277\275\357\277\275",},
+			json::array{"\357\277\275\357\277\275",},
 		},
 		{
 			"i_string_iso_latin_1"sv,
 			"[\"\351\"]"sv,
-			mstch::array{"\351",},
+			json::array{"\351",},
 		},
 		{
 			"i_string_lone_second_surrogate"sv,
 			"[\"\\uDFAA\"]"sv,
-			mstch::array{"\357\277\275",},
+			json::array{"\357\277\275",},
 		},
 		{
 			"i_string_lone_utf8_continuation_byte"sv,
 			"[\"\201\"]"sv,
-			mstch::array{"\201",},
+			json::array{"\201",},
 		},
 		{
 			"i_string_not_in_unicode_range"sv,
 			"[\"\364\277\277\277\"]"sv,
-			mstch::array{"\364\277\277\277",},
+			json::array{"\364\277\277\277",},
 		},
 		{
 			"i_string_overlong_sequence_2_bytes"sv,
 			"[\"\300\257\"]"sv,
-			mstch::array{"\300\257",},
+			json::array{"\300\257",},
 		},
 		{
 			"i_string_overlong_sequence_6_bytes"sv,
 			"[\"\374\203\277\277\277\277\"]"sv,
-			mstch::array{"\374\203\277\277\277\277",},
+			json::array{"\374\203\277\277\277\277",},
 		},
 		{
 			"i_string_overlong_sequence_6_bytes_null"sv,
 			"[\"\374\200\200\200\200\200\"]"sv,
-			mstch::array{"\374\200\200\200\200\200",},
+			json::array{"\374\200\200\200\200\200",},
 		},
 		{
 			"i_string_truncated-utf-8"sv,
 			"[\"\340\377\"]"sv,
-			mstch::array{"\340\377",},
+			json::array{"\340\377",},
 		},
 		// i_string_UTF-16LE_with_BOM
 		{
 			"i_string_UTF-8_invalid_sequence"sv,
 			"[\"\346\227\245\321\210\372\"]"sv,
-			mstch::array{"\346\227\245\321\210\372",},
+			json::array{"\346\227\245\321\210\372",},
 		},
 		// i_string_utf16BE_no_BOM
 		// i_string_utf16LE_no_BOM
 		{
 			"i_string_UTF8_surrogate_U+D800"sv,
 			"[\"\355\240\200\"]"sv,
-			mstch::array{"\355\240\200",},
+			json::array{"\355\240\200",},
 		},
 		{
 			"i_structure_500_nested_arrays"sv,
@@ -196,7 +196,7 @@ namespace mstch::testing {
 		{
 			"n_array_extra_comma"sv,
 			"[\"\",]"sv,
-			mstch::array{"",},
+			json::array{"",},
 		},
 		{
 			"n_array_incomplete"sv,
@@ -237,7 +237,7 @@ namespace mstch::testing {
 		{
 			"n_array_number_and_comma"sv,
 			"[1,]"sv,
-			mstch::array{1ll,},
+			json::array{1ll,},
 		},
 		{
 			"n_array_number_and_several_commas"sv,
@@ -518,7 +518,7 @@ namespace mstch::testing {
 		{
 			"n_object_lone_continuation_byte_in_key_and_trailing_comma"sv,
 			"{\"\271\":\"0\",}"sv,
-			mstch::map{{"\271","0"},},
+			json::map{{"\271","0"},},
 		},
 		{
 			"n_object_missing_colon"sv,
@@ -563,7 +563,7 @@ namespace mstch::testing {
 		{
 			"n_object_trailing_comma"sv,
 			"{\"id\":0,}"sv,
-			mstch::map{{"id",0ll},},
+			json::map{{"id",0ll},},
 		},
 		{
 			"n_object_trailing_comment"sv,
@@ -925,195 +925,195 @@ namespace mstch::testing {
 		{
 			"y_array_empty-string"sv,
 			"[\"\"]"sv,
-			mstch::array{"",},
+			json::array{"",},
 		},
 		{
 			"y_array_empty"sv,
 			"[]"sv,
-			mstch::array{},
+			json::array{},
 		},
 		{
 			"y_array_ending_with_newline"sv,
 			"[\"a\"]"sv,
-			mstch::array{"a",},
+			json::array{"a",},
 		},
 		{
 			"y_array_false"sv,
 			"[false]"sv,
-			mstch::array{false,},
+			json::array{false,},
 		},
 		{
 			"y_array_heterogeneous"sv,
 			"[null, 1, \"1\", {}]"sv,
-			mstch::array{nullptr,1ll,"1",mstch::map{},},
+			json::array{nullptr,1ll,"1",json::map{},},
 		},
 		{
 			"y_array_null"sv,
 			"[null]"sv,
-			mstch::array{nullptr,},
+			json::array{nullptr,},
 		},
 		{
 			"y_array_with_1_and_newline"sv,
 			"[1\n]"sv,
-			mstch::array{1ll,},
+			json::array{1ll,},
 		},
 		{
 			"y_array_with_leading_space"sv,
 			" [1]"sv,
-			mstch::array{1ll,},
+			json::array{1ll,},
 		},
 		{
 			"y_array_with_several_null"sv,
 			"[1,null,null,null,2]"sv,
-			mstch::array{1ll,nullptr,nullptr,nullptr,2ll,},
+			json::array{1ll,nullptr,nullptr,nullptr,2ll,},
 		},
 		{
 			"y_array_with_trailing_space"sv,
 			"[2] "sv,
-			mstch::array{2ll,},
+			json::array{2ll,},
 		},
 		{
 			"y_number"sv,
 			"[123e65]"sv,
-			mstch::array{123e65,},
+			json::array{123e65,},
 		},
 		{
 			"y_number_0e+1"sv,
 			"[0e+1]"sv,
-			mstch::array{0.000000,},
+			json::array{0.000000,},
 		},
 		{
 			"y_number_0e1"sv,
 			"[0e1]"sv,
-			mstch::array{0.000000,},
+			json::array{0.000000,},
 		},
 		{
 			"y_number_after_space"sv,
 			"[ 4]"sv,
-			mstch::array{4ll,},
+			json::array{4ll,},
 		},
 		{
 			"y_number_double_close_to_zero"sv,
 			"[-0.000000000000000000000000000000000000000000000000000000000000000000000000000001]\n"sv,
-			mstch::array{-1e-78,},
+			json::array{-1e-78,},
 		},
 		{
 			"y_number_int_with_exp"sv,
 			"[20e1]"sv,
-			mstch::array{200.000000,},
+			json::array{200.000000,},
 		},
 		{
 			"y_number_minus_zero"sv,
 			"[-0]"sv,
-			mstch::array{0ll,},
+			json::array{0ll,},
 		},
 		{
 			"y_number_negative_int"sv,
 			"[-123]"sv,
-			mstch::array{-123ll,},
+			json::array{-123ll,},
 		},
 		{
 			"y_number_negative_one"sv,
 			"[-1]"sv,
-			mstch::array{-1ll,},
+			json::array{-1ll,},
 		},
 		{
 			"y_number_negative_zero"sv,
 			"[-0]"sv,
-			mstch::array{0ll,},
+			json::array{0ll,},
 		},
 		{
 			"y_number_real_capital_e"sv,
 			"[1E22]"sv,
-			mstch::array{1E22,},
+			json::array{1E22,},
 		},
 		{
 			"y_number_real_capital_e_neg_exp"sv,
 			"[1E-2]"sv,
-			mstch::array{1E-2,},
+			json::array{1E-2,},
 		},
 		{
 			"y_number_real_capital_e_pos_exp"sv,
 			"[1E+2]"sv,
-			mstch::array{1E+2,},
+			json::array{1E+2,},
 		},
 		{
 			"y_number_real_exponent"sv,
 			"[123e45]"sv,
-			mstch::array{123e45,},
+			json::array{123e45,},
 		},
 		{
 			"y_number_real_fraction_exponent"sv,
 			"[123.456e78]"sv,
-			mstch::array{123.456e78,},
+			json::array{123.456e78,},
 		},
 		{
 			"y_number_real_neg_exp"sv,
 			"[1e-2]"sv,
-			mstch::array{1e-2,},
+			json::array{1e-2,},
 		},
 		{
 			"y_number_real_pos_exponent"sv,
 			"[1e+2]"sv,
-			mstch::array{1e+2,},
+			json::array{1e+2,},
 		},
 		{
 			"y_number_simple_int"sv,
 			"[123]"sv,
-			mstch::array{123ll,},
+			json::array{123ll,},
 		},
 		{
 			"y_number_simple_real"sv,
 			"[123.456789]"sv,
-			mstch::array{123.456789,},
+			json::array{123.456789,},
 		},
 		{
 			"y_object"sv,
 			"{\"asd\":\"sdf\", \"dfg\":\"fgh\"}"sv,
-			mstch::map{{"asd","sdf"},{"dfg","fgh"},},
+			json::map{{"asd","sdf"},{"dfg","fgh"},},
 		},
 		{
 			"y_object_basic"sv,
 			"{\"asd\":\"sdf\"}"sv,
-			mstch::map{{"asd","sdf"},},
+			json::map{{"asd","sdf"},},
 		},
 		{
 			"y_object_duplicated_key"sv,
 			"{\"a\":\"b\",\"a\":\"c\"}"sv,
-			mstch::map{{"a","c"},},
+			json::map{{"a","c"},},
 		},
 		{
 			"y_object_duplicated_key_and_value"sv,
 			"{\"a\":\"b\",\"a\":\"b\"}"sv,
-			mstch::map{{"a","b"},},
+			json::map{{"a","b"},},
 		},
 		{
 			"y_object_empty"sv,
 			"{}"sv,
-			mstch::map{},
+			json::map{},
 		},
 		{
 			"y_object_empty_key"sv,
 			"{\"\":0}"sv,
-			mstch::map{{"",0ll},},
+			json::map{{"",0ll},},
 		},
 		{
 			"y_object_escaped_null_in_key"sv,
 			"{\"foo\\u0000bar\": 42}"sv,
-			mstch::map{{"foo\000bar"s,42ll},},
+			json::map{{"foo\000bar"s,42ll},},
 		},
 		{
 			"y_object_extreme_numbers"sv,
 			"{ \"min\": -1.0e+28, \"max\": 1.0e+28 }"sv,
-			mstch::map{{"max",9999999999999999583119736832.000000},{"min",-9999999999999999583119736832.000000},},
+			json::map{{"max",9999999999999999583119736832.000000},{"min",-9999999999999999583119736832.000000},},
 		},
 		{
 			"y_object_long_strings"sv,
 			"{\"x\":[{\"id\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}], \"id\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"sv,
-			mstch::map{
+			json::map{
 				{"id","xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"},
-				{"x",mstch::array{
-					mstch::map{
+				{"x",json::array{
+					json::map{
 						{"id","xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"},
 					},
 				}},
@@ -1122,127 +1122,127 @@ namespace mstch::testing {
 		{
 			"y_object_simple"sv,
 			"{\"a\":[]}"sv,
-			mstch::map{{"a",mstch::array{}},},
+			json::map{{"a",json::array{}},},
 		},
 		{
 			"y_object_string_unicode"sv,
 			"{\"title\":\"\\u041f\\u043e\\u043b\\u0442\\u043e\\u0440\\u0430 \\u0417\\u0435\\u043c\\u043b\\u0435\\u043a\\u043e\\u043f\\u0430\" }"sv,
-			mstch::map{{"title","\320\237\320\276\320\273\321\202\320\276\321\200\320\260 \320\227\320\265\320\274\320\273\320\265\320\272\320\276\320\277\320\260"},},
+			json::map{{"title","\320\237\320\276\320\273\321\202\320\276\321\200\320\260 \320\227\320\265\320\274\320\273\320\265\320\272\320\276\320\277\320\260"},},
 		},
 		{
 			"y_object_with_newlines"sv,
 			"{\n\"a\": \"b\"\n}"sv,
-			mstch::map{{"a","b"},},
+			json::map{{"a","b"},},
 		},
 		{
 			"y_string_1_2_3_bytes_UTF-8_sequences"sv,
 			"[\"\\u0060\\u012a\\u12AB\"]"sv,
-			mstch::array{"`\304\252\341\212\253",},
+			json::array{"`\304\252\341\212\253",},
 		},
 		{
 			"y_string_accepted_surrogate_pair"sv,
 			"[\"\\uD801\\udc37\"]"sv,
-			mstch::array{"\357\277\275\357\277\275",},
+			json::array{"\357\277\275\357\277\275",},
 		},
 		{
 			"y_string_accepted_surrogate_pairs"sv,
 			"[\"\\ud83d\\ude39\\ud83d\\udc8d\"]"sv,
-			mstch::array{"\357\277\275\357\277\275\357\277\275\357\277\275",},
+			json::array{"\357\277\275\357\277\275\357\277\275\357\277\275",},
 		},
 		{
 			"y_string_allowed_escapes"sv,
 			"[\"\\\"\\\\\\/\\b\\f\\n\\r\\t\"]"sv,
-			mstch::array{"\"\\/\b\f\n\r\t",},
+			json::array{"\"\\/\b\f\n\r\t",},
 		},
 		{
 			"y_string_backslash_and_u_escaped_zero"sv,
 			"[\"\\\\u0000\"]"sv,
-			mstch::array{"\\u0000",},
+			json::array{"\\u0000",},
 		},
 		{
 			"y_string_backslash_doublequotes"sv,
 			"[\"\\\"\"]"sv,
-			mstch::array{"\"",},
+			json::array{"\"",},
 		},
 		{
 			"y_string_comments"sv,
 			"[\"a/*b*/c/*d//e\"]"sv,
-			mstch::array{"a/*b*/c/*d//e",},
+			json::array{"a/*b*/c/*d//e",},
 		},
 		{
 			"y_string_double_escape_a"sv,
 			"[\"\\\\a\"]"sv,
-			mstch::array{"\\a",},
+			json::array{"\\a",},
 		},
 		{
 			"y_string_double_escape_n"sv,
 			"[\"\\\\n\"]"sv,
-			mstch::array{"\\n",},
+			json::array{"\\n",},
 		},
 		{
 			"y_string_escaped_control_character"sv,
 			"[\"\\u0012\"]"sv,
-			mstch::array{"\022",},
+			json::array{"\022",},
 		},
 		{
 			"y_string_escaped_noncharacter"sv,
 			"[\"\\uFFFF\"]"sv,
-			mstch::array{"\357\277\277",},
+			json::array{"\357\277\277",},
 		},
 		{
 			"y_string_in_array"sv,
 			"[\"asd\"]"sv,
-			mstch::array{"asd",},
+			json::array{"asd",},
 		},
 		{
 			"y_string_in_array_with_leading_space"sv,
 			"[ \"asd\"]"sv,
-			mstch::array{"asd",},
+			json::array{"asd",},
 		},
 		{
 			"y_string_last_surrogates_1_and_2"sv,
 			"[\"\\uDBFF\\uDFFF\"]"sv,
-			mstch::array{"\357\277\275\357\277\275",},
+			json::array{"\357\277\275\357\277\275",},
 		},
 		{
 			"y_string_nbsp_uescaped"sv,
 			"[\"new\\u00A0line\"]"sv,
-			mstch::array{"new\302\240line",},
+			json::array{"new\302\240line",},
 		},
 		{
 			"y_string_nonCharacterInUTF-8_U+10FFFF"sv,
 			"[\"\364\217\277\277\"]"sv,
-			mstch::array{"\364\217\277\277",},
+			json::array{"\364\217\277\277",},
 		},
 		{
 			"y_string_nonCharacterInUTF-8_U+FFFF"sv,
 			"[\"\357\277\277\"]"sv,
-			mstch::array{"\357\277\277",},
+			json::array{"\357\277\277",},
 		},
 		{
 			"y_string_null_escape"sv,
 			"[\"\\u0000\"]"sv,
-			mstch::array{"\000"s,},
+			json::array{"\000"s,},
 		},
 		{
 			"y_string_one-byte-utf-8"sv,
 			"[\"\\u002c\"]"sv,
-			mstch::array{",",},
+			json::array{",",},
 		},
 		{
 			"y_string_pi"sv,
 			"[\"\317\200\"]"sv,
-			mstch::array{"\317\200",},
+			json::array{"\317\200",},
 		},
 		{
 			"y_string_reservedCharacterInUTF-8_U+1BFFF"sv,
 			"[\"\360\233\277\277\"]"sv,
-			mstch::array{"\360\233\277\277",},
+			json::array{"\360\233\277\277",},
 		},
 		{
 			"y_string_simple_ascii"sv,
 			"[\"asd \"]"sv,
-			mstch::array{"asd ",},
+			json::array{"asd ",},
 		},
 		{
 			"y_string_space"sv,
@@ -1252,102 +1252,102 @@ namespace mstch::testing {
 		{
 			"y_string_surrogates_U+1D11E_MUSICAL_SYMBOL_G_CLEF"sv,
 			"[\"\\uD834\\uDd1e\"]"sv,
-			mstch::array{"\357\277\275\357\277\275",},
+			json::array{"\357\277\275\357\277\275",},
 		},
 		{
 			"y_string_three-byte-utf-8"sv,
 			"[\"\\u0821\"]"sv,
-			mstch::array{"\340\240\241",},
+			json::array{"\340\240\241",},
 		},
 		{
 			"y_string_two-byte-utf-8"sv,
 			"[\"\\u0123\"]"sv,
-			mstch::array{"\304\243",},
+			json::array{"\304\243",},
 		},
 		{
 			"y_string_u+2028_line_sep"sv,
 			"[\"\342\200\250\"]"sv,
-			mstch::array{"\342\200\250",},
+			json::array{"\342\200\250",},
 		},
 		{
 			"y_string_u+2029_par_sep"sv,
 			"[\"\342\200\251\"]"sv,
-			mstch::array{"\342\200\251",},
+			json::array{"\342\200\251",},
 		},
 		{
 			"y_string_uEscape"sv,
 			"[\"\\u0061\\u30af\\u30EA\\u30b9\"]"sv,
-			mstch::array{"a\343\202\257\343\203\252\343\202\271",},
+			json::array{"a\343\202\257\343\203\252\343\202\271",},
 		},
 		{
 			"y_string_uescaped_newline"sv,
 			"[\"new\\u000Aline\"]"sv,
-			mstch::array{"new\nline",},
+			json::array{"new\nline",},
 		},
 		{
 			"y_string_unescaped_char_delete"sv,
 			"[\"\177\"]"sv,
-			mstch::array{"\177",},
+			json::array{"\177",},
 		},
 		{
 			"y_string_unicode"sv,
 			"[\"\\uA66D\"]"sv,
-			mstch::array{"\352\231\255",},
+			json::array{"\352\231\255",},
 		},
 		{
 			"y_string_unicodeEscapedBackslash"sv,
 			"[\"\\u005C\"]"sv,
-			mstch::array{"\\",},
+			json::array{"\\",},
 		},
 		{
 			"y_string_unicode_2"sv,
 			"[\"\342\215\202\343\210\264\342\215\202\"]"sv,
-			mstch::array{"\342\215\202\343\210\264\342\215\202",},
+			json::array{"\342\215\202\343\210\264\342\215\202",},
 		},
 		{
 			"y_string_unicode_escaped_double_quote"sv,
 			"[\"\\u0022\"]"sv,
-			mstch::array{"\"",},
+			json::array{"\"",},
 		},
 		{
 			"y_string_unicode_U+10FFFE_nonchar"sv,
 			"[\"\\uDBFF\\uDFFE\"]"sv,
-			mstch::array{"\357\277\275\357\277\275",},
+			json::array{"\357\277\275\357\277\275",},
 		},
 		{
 			"y_string_unicode_U+1FFFE_nonchar"sv,
 			"[\"\\uD83F\\uDFFE\"]"sv,
-			mstch::array{"\357\277\275\357\277\275",},
+			json::array{"\357\277\275\357\277\275",},
 		},
 		{
 			"y_string_unicode_U+200B_ZERO_WIDTH_SPACE"sv,
 			"[\"\\u200B\"]"sv,
-			mstch::array{"\342\200\213",},
+			json::array{"\342\200\213",},
 		},
 		{
 			"y_string_unicode_U+2064_invisible_plus"sv,
 			"[\"\\u2064\"]"sv,
-			mstch::array{"\342\201\244",},
+			json::array{"\342\201\244",},
 		},
 		{
 			"y_string_unicode_U+FDD0_nonchar"sv,
 			"[\"\\uFDD0\"]"sv,
-			mstch::array{"\357\267\220",},
+			json::array{"\357\267\220",},
 		},
 		{
 			"y_string_unicode_U+FFFE_nonchar"sv,
 			"[\"\\uFFFE\"]"sv,
-			mstch::array{"\357\277\276",},
+			json::array{"\357\277\276",},
 		},
 		{
 			"y_string_utf8"sv,
 			"[\"\342\202\254\360\235\204\236\"]"sv,
-			mstch::array{"\342\202\254\360\235\204\236",},
+			json::array{"\342\202\254\360\235\204\236",},
 		},
 		{
 			"y_string_with_del_character"sv,
 			"[\"a\177a\"]"sv,
-			mstch::array{"a\177a",},
+			json::array{"a\177a",},
 		},
 		{
 			"y_structure_lonely_false"sv,
@@ -1387,18 +1387,18 @@ namespace mstch::testing {
 		{
 			"y_structure_trailing_newline"sv,
 			"[\"a\"]\n"sv,
-			mstch::array{"a",},
+			json::array{"a",},
 		},
 		{
 			"y_structure_true_in_array"sv,
 			"[true]"sv,
-			mstch::array{true,},
+			json::array{true,},
 		},
 		{
 			"y_structure_whitespace_array"sv,
 			" [] "sv,
-			mstch::array{},
+			json::array{},
 		},
 	};
-}  // namespace mstch::testing
+}  // namespace json::testing
 #pragma once

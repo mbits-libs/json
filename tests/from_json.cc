@@ -5,7 +5,7 @@
 
 using namespace std::literals;
 
-namespace mstch::testing {
+namespace json::testing {
 	template <typename Expected>
 	struct nav_testcase {
 		std::string_view name;
@@ -24,7 +24,7 @@ namespace mstch::testing {
 	protected:
 		template <typename Value>
 		void path(ParamType const& param, Value&& value) {
-			auto actual = mstch::from_json(value, param.path);
+			auto actual = json::from_json(value, param.path);
 
 			if (!param.expected) {
 				ASSERT_EQ(nullptr, actual);
@@ -46,7 +46,7 @@ namespace mstch::testing {
 
 	TEST_P(from_json, paths_mutable) {
 		auto& param = GetParam();
-		mstch::node copy{param.value};
+		json::node copy{param.value};
 		path(param, copy);
 	}
 
@@ -62,7 +62,7 @@ namespace mstch::testing {
 
 	TEST_P(from_json, paths_mutable_map) {
 		auto& param = GetParam();
-		mstch::node copy{param.value};
+		json::node copy{param.value};
 		auto* mapped = cast<map>(copy);
 		if (!mapped) {
 			ASSERT_FALSE(!!param.expected);
@@ -78,7 +78,7 @@ namespace mstch::testing {
 
 	TEST_P(from_json, paths_mutable_ptr) {
 		auto& param = GetParam();
-		mstch::node copy{param.value};
+		json::node copy{param.value};
 		path(param, &copy);
 	}
 
@@ -89,7 +89,7 @@ namespace mstch::testing {
 
 	TEST_P(from_json, paths_mutable_map_ptr) {
 		auto& param = GetParam();
-		mstch::node copy{param.value};
+		json::node copy{param.value};
 		path(param, cast<map>(copy));
 	}
 
@@ -170,7 +170,7 @@ namespace mstch::testing {
 		template <typename Value>
 		void path(ParamType const& param, Value&& value) {
 			auto actual =
-			    mstch::cast_from_json<std::string>(value, as_str(param.path));
+			    json::cast_from_json<std::string>(value, as_str(param.path));
 			if (!param.expected) {
 				ASSERT_EQ(nullptr, actual);
 				return;
@@ -294,4 +294,4 @@ namespace mstch::testing {
 	INSTANTIATE_TEST_SUITE_P(strings,
 	                         cast_from_json,
 	                         ::testing::ValuesIn(strings));
-}  // namespace mstch::testing
+}  // namespace json::testing

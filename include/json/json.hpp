@@ -7,7 +7,14 @@
 #include <optional>
 #include <string_view>
 
-namespace mstch {
+namespace json {
+	using mstch::array;
+	using mstch::callback;
+	using mstch::lambda;
+	using mstch::map;
+	using mstch::node;
+	using mstch::object;
+
 	template <typename Kind>
 	static inline Kind* cast(node& value) {
 		if (!std::holds_alternative<Kind>(value)) return nullptr;
@@ -174,4 +181,4 @@ namespace mstch {
 	void write_json(output&, node const&);
 	void write_json(FILE*, node const&);
 	void write_json(std::string&, node const&);
-}  // namespace mstch
+}  // namespace json

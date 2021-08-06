@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include <json/json.hpp>
 #include <iomanip>
 #include <iostream>
 #include <gtest/gtest.h>
+#include <json/json.hpp>
 
 using namespace std::literals;
 
@@ -61,11 +61,11 @@ struct cxx_string {
 	}
 };
 
-namespace mstch::testing {
+namespace json::testing {
 	struct node_testcase {
 		std::string_view name{};
 		std::string_view text{};
-		mstch::node node{};
+		json::node node{};
 
 		friend std::ostream& operator<<(std::ostream& out,
 		                                node_testcase const& tc) {
@@ -80,9 +80,9 @@ namespace mstch::testing {
 			        std::remove_cv_t<std::remove_reference_t<decltype(value)>>;
 			    if constexpr (std::is_same_v<type, std::monostate>) {
 				    out << "node{}";
-			    } else if constexpr (std::is_same_v<type, mstch::object> ||
-			                         std::is_same_v<type, mstch::callback> ||
-			                         std::is_same_v<type, mstch::lambda>) {
+			    } else if constexpr (std::is_same_v<type, json::object> ||
+			                         std::is_same_v<type, json::callback> ||
+			                         std::is_same_v<type, json::lambda>) {
 				    out << "???";
 			    } else if constexpr (std::is_same_v<type, long long>) {
 				    out << value << "ll";
@@ -98,14 +98,14 @@ namespace mstch::testing {
 			    } else if constexpr (std::is_same_v<type, std::string>) {
 				    out << cxx_string{value};
 				    if (value.find('\000') != std::string::npos) out << "s";
-			    } else if constexpr (std::is_same_v<type, mstch::map>) {
-				    out << "mstch::map{";
+			    } else if constexpr (std::is_same_v<type, json::map>) {
+				    out << "json::map{";
 				    for (auto const& [fld, subvalue] : value) {
 					    out << '{' << cxx_string{fld} << ',' << subvalue
 					        << "},";
 				    }
 				    out << '}';
-			    } else if constexpr (std::is_same_v<type, mstch::array>) {
+			    } else if constexpr (std::is_same_v<type, json::array>) {
 				    bool first{true};
 				    out << "mk_array(";
 				    for (auto const& subvalue : value) {
@@ -142,8 +142,8 @@ namespace mstch::testing {
 				    using type = std::remove_cv_t<
 				        std::remove_reference_t<decltype(expected)>>;
 				    auto const& actual = std::get<type>(actual_node);
-				    if constexpr (std::is_same_v<type, mstch::lambda>) {
-				    } else if constexpr (std::is_same_v<type, mstch::map>) {
+				    if constexpr (std::is_same_v<type, json::lambda>) {
+				    } else if constexpr (std::is_same_v<type, json::map>) {
 					    ASSERT_EQ(expected.size(), actual.size())
 					        << "Path: " << path;
 					    for (auto const& [fld, exp_value] : expected) {
@@ -153,7 +153,7 @@ namespace mstch::testing {
 						    assert_eq_(exp_value, it->second, subpath);
 						    if (test->HasFatalFailure()) return;
 					    }
-				    } else if constexpr (std::is_same_v<type, mstch::array>) {
+				    } else if constexpr (std::is_same_v<type, json::array>) {
 					    ASSERT_EQ(expected.size(), actual.size())
 					        << "Path: " << path;
 					    for (size_t index = 0; index < expected.size();
@@ -176,4 +176,4 @@ namespace mstch::testing {
 			assert_eq_(expected_node, actual_node, "/");
 		}
 	};
-}  // namespace mstch::testing
+}  // namespace json::testing

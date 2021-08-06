@@ -12,27 +12,27 @@ Open-source library implementing JSON parser and writer in terms of [Mustache](h
 #include <json/json.hpp>
 ```
 
-### mstch::read_json
+### json::read_json
 
 ```cpp
-enum class mstch::read_mode { strict, ECMA };
-mstch::node mstch::read_json(
+enum class json::read_mode { strict, ECMA };
+json::node json::read_json(
     std::string_view text,
     std::string_view skip = {},
-    mstch::read_mode mode = mstch::read_mode::strict);
+    json::read_mode mode = json::read_mode::strict);
 ```
 
 Parses the input to a `node`. If the input text cannot be parsed, returned `node` will hold `std::monostate`.
 
-If the `skip` is present at the start of `text`, it will be removed before handiong over to the parser. This helps in formatting JSONs returned by some services. For instance responses from Gerrit could be parsed with:
+If the `skip` is present at the start of `text`, it will be removed before handing over to the parser. This helps in formatting JSONs returned by some services. For instance responses from Gerrit could be parsed with:
 
 ```cpp
-auto result = mstch::read_json(result_text, ")]}'\n"sv);
+auto result = json::read_json(result_text, ")]}'\n"sv);
 ```
 
 The `read_mode::strict` accepts only JSON input, while `read_mode::ECMA` allows grammar similar to JavaScript, with `'apostrophe enclosed strings'` and commas at the end of dictionaries and array.
 
-### mstch::write_json
+### json::write_json
 
 ```cpp
 void write_json(output&, node const&);
@@ -42,7 +42,7 @@ void write_json(std::string&, node const&);
 
 Formats the `node` value to provided output. If the node contains only JSON-compatible values, the outpout is a valid JSON document. If the node contains a lambda, callback, dynamic object or a `std::monostate`, the output will contain a `"undefined"`, which will disqualify the result as a valid JSON.
 
-### mstch::output
+### json::output
 
 ```cpp
 struct output {
@@ -54,7 +54,7 @@ struct output {
 
 Used internally by `write_json` function to output the formatted text. Library contains implementation backed by `FILE*` and `std::string` reference, but users can provide their own backends.
 
-### mstch::cast&lt;Kind&gt;
+### json::cast&lt;Kind&gt;
 
 ```cpp
 Kind* cast(node& value);
@@ -83,7 +83,7 @@ Kind const* cast(node const* value, std::string const& key);
 
 Equivalent of `cast<Kind>(cast<map>(value), key);`
 
-### mstch::from_json
+### json::from_json
 
 ```cpp
 node* from_json(map& value, std::string_view path);
@@ -109,7 +109,7 @@ node const* from_json(node const* value, std::string_view path);
 
 Equivalent of `from_json(cast<map>(value), key);`
 
-### mstch::cast_from_json&lt;Kind&gt;
+### json::cast_from_json&lt;Kind&gt;
 
 ```cpp
 Kind* cast_from_json(map& value, std::string const& path);

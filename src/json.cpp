@@ -1,16 +1,16 @@
 // Copyright (c) 2021 midnightBITS
 // This code is licensed under MIT license (see LICENSE for details)
 
-#include <json/json.hpp>
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <stack>
+#include <json/json.hpp>
 
 using namespace std::literals;
 
-namespace mstch {
+namespace json {
 	namespace {
 		std::string as_str(std::string_view view) {
 			return {view.data(), view.size()};
@@ -58,7 +58,7 @@ namespace mstch {
 
 		size_t count = path.size();
 		for (size_t index = 1; index < count; ++index) {
-			auto* dict = cast<map>(*ctx);
+			auto* dict = json::cast<map>(*ctx);
 			if (!dict) return nullptr;
 
 			auto const& property = path[index];
@@ -115,7 +115,7 @@ namespace mstch {
 		struct reader_result {
 			std::variant<std::monostate,
 			             std::unique_ptr<reader_state>,
-			             mstch::node>
+			             json::node>
 			    result{};
 			reader result_mode{reader::push};
 
@@ -124,7 +124,7 @@ namespace mstch {
 			reader_result(std::unique_ptr<reader_state> next_reader,
 			              reader result_mode = reader::push)
 			    : result{std::move(next_reader)}, result_mode{result_mode} {}
-			reader_result(mstch::node&& result,
+			reader_result(json::node&& result,
 			              reader result_mode = reader::replace)
 			    : result{std::move(result)}, result_mode{result_mode} {}
 		};
@@ -990,7 +990,7 @@ namespace mstch {
 
 			if (std::holds_alternative<std::unique_ptr<reader_state>>(result)) {
 				auto& next = std::get<std::unique_ptr<reader_state>>(result);
-				if (result_mode != mstch::reader::replace)
+				if (result_mode != json::reader::replace)
 					stack.push(std::move(reader));
 
 				stack.push(std::move(next));

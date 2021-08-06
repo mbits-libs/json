@@ -6,7 +6,7 @@
 
 using namespace std::literals;
 
-namespace mstch::testing {
+namespace json::testing {
 
 	class json_read_test
 	    : public node_assert_eq<::testing::TestWithParam<node_testcase>> {};
@@ -16,7 +16,7 @@ namespace mstch::testing {
 
 	TEST_P(json_read_test, parser) {
 		auto& param = GetParam();
-		auto actual = mstch::read_json(param.text);
+		auto actual = json::read_json(param.text);
 
 #if 0
 		std::cerr << "{\n  " << cxx_string{param.name} << "sv,\n  "
@@ -33,7 +33,7 @@ namespace mstch::testing {
 
 	TEST_P(js_read_test, parser) {
 		auto& param = GetParam();
-		auto actual = mstch::read_json(param.text, ")]}'\n"sv, read_mode::ECMA);
+		auto actual = json::read_json(param.text, ")]}'\n"sv, read_mode::ECMA);
 
 #if 0
 		std::cerr << "{\n  " << cxx_string{param.name} << "sv,\n  "
@@ -72,12 +72,12 @@ namespace mstch::testing {
 	    {
 	        "structure_whitespace_formfeed"sv,
 	        "[\f]"sv,
-	        mstch::array{},
+	        json::array{},
 	    },
 	    {
 	        "structure_whitespace_formfeed"sv,
 	        "[\f]"sv,
-	        mstch::array{},
+	        json::array{},
 	    },
 	    {
 	        "string_escape_slash_n"sv,
@@ -131,7 +131,7 @@ namespace mstch::testing {
 	    {
 	        "array_of_numbers"sv,
 	        "[+0b1010101101100110, -0644, 0755, -0o755, 0xcafe, 0XBABE]"sv,
-	        mstch::array{
+	        json::array{
 	            43878ll,
 	            -420ll,
 	            493ll,
@@ -159,7 +159,7 @@ namespace mstch::testing {
 	    {
 	        "array_of_floats"sv,
 	        "[0.5, 0e+3, -0E-3]"sv,
-	        mstch::array{
+	        json::array{
 	            0.500000,
 	            0e+3,
 	            -0e-3,
@@ -173,7 +173,7 @@ namespace mstch::testing {
 	    {
 	        "structure_with_non_string_keys"sv,
 	        "{+123: undefined, -0xcafe: \"a\", 55.55e-10: false, code: true}"sv,
-	        mstch::map{
+	        json::map{
 	            {"123", nullptr},
 	            {"-51966", "a"},
 	            {"0.000000", false},
@@ -251,4 +251,4 @@ namespace mstch::testing {
 	INSTANTIATE_TEST_SUITE_P(JavaScript,
 	                         js_read_test,
 	                         ::testing::ValuesIn(js_values));
-}  // namespace mstch::testing
+}  // namespace json::testing

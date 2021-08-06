@@ -6,10 +6,10 @@
 
 using namespace std::literals;
 
-namespace mstch::testing {
+namespace json::testing {
 	struct write_testcase {
 		std::string_view name{};
-		mstch::node node{};
+		json::node node{};
 
 		friend std::ostream& operator<<(std::ostream& out,
 		                                write_testcase const& tc) {
@@ -23,7 +23,7 @@ namespace mstch::testing {
 	TEST_F(write_test, map_to_stdout) {
 		std_capture out;
 		out.lock();
-		write_json(stdout, mstch::map{{"key", "value"}});
+		write_json(stdout, json::map{{"key", "value"}});
 		out.unlock();
 		ASSERT_EQ("{\"key\": \"value\"}", out.str());
 	}
@@ -98,4 +98,4 @@ namespace mstch::testing {
 	};
 
 	INSTANTIATE_TEST_SUITE_P(samples, write_test, ::testing::ValuesIn(tests));
-}  // namespace mstch::testing
+}  // namespace json::testing
