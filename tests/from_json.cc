@@ -9,13 +9,13 @@ namespace json::testing {
 	template <typename Expected>
 	struct nav_testcase {
 		std::string_view name;
-		std::string_view path;
+		json::string_view path;
 		node value;
 		std::optional<Expected> expected{};
 
 		friend std::ostream& operator<<(std::ostream& out,
 		                                nav_testcase const& tc) {
-			return out << tc.name << ", " << cxx_string{tc.path};
+			return out << tc.name << ", " << cxx_u8string{tc.path};
 		}
 	};
 
@@ -96,35 +96,35 @@ namespace json::testing {
 	static const nav_testcase<node> tests[] = {
 	    {
 	        "zeroth_level"sv,
-	        "",
-	        map{{"key", "value"}},
+	        u8"",
+	        map{{u8"key", u8"value"}},
 	    },
 	    {
 	        "single_level"sv,
-	        "key",
-	        map{{"key", "value"}},
-	        "value",
+	        u8"key",
+	        map{{u8"key", u8"value"}},
+	        u8"value",
 	    },
 	    {
 	        "single_level_missing"sv,
-	        "key2",
-	        map{{"key", "value"}},
+	        u8"key2",
+	        map{{u8"key", u8"value"}},
 	    },
 	    {
 	        "not_map"sv,
-	        "key",
-	        array{"value1", "value2"},
+	        u8"key",
+	        array{u8"value1", u8"value2"},
 	    },
 	    {
 	        "multi_level"sv,
-	        "key.sub1.sub2",
+	        u8"key.sub1.sub2",
 	        map{{
-	            "key",
+	            u8"key",
 	            map{{
-	                "sub1",
+	                u8"sub1",
 	                map{
-	                    {"sub2", 3.14},
-	                    {"unused", 2.71},
+	                    {u8"sub2", 3.14},
+	                    {u8"unused", 2.71},
 	                },
 	            }},
 	        }},
@@ -132,26 +132,26 @@ namespace json::testing {
 	    },
 	    {
 	        "multi_level_missing"sv,
-	        "key.sub1.sub2",
+	        u8"key.sub1.sub2",
 	        map{{
-	            "key",
+	            u8"key",
 	            map{{
-	                "subA",
+	                u8"subA",
 	                map{
-	                    {"sub2", 3.14},
-	                    {"unused", 2.71},
+	                    {u8"sub2", 3.14},
+	                    {u8"unused", 2.71},
 	                },
 	            }},
 	        }},
 	    },
 	    {
 	        "multi_level_not_map"sv,
-	        "key.sub1.sub2",
+	        u8"key.sub1.sub2",
 	        map{{
-	            "key",
+	            u8"key",
 	            map{{
-	                "sub1",
-	                array{"sub2", 3.14, "unused", 2.71},
+	                u8"sub1",
+	                array{u8"sub2", 3.14, u8"unused", 2.71},
 	            }},
 	        }},
 	    },
@@ -159,18 +159,18 @@ namespace json::testing {
 
 	INSTANTIATE_TEST_SUITE_P(samples, from_json, ::testing::ValuesIn(tests));
 
-	inline std::string as_str(std::string_view view) {
+	inline string as_str(string_view view) {
 		return {view.data(), view.size()};
 	}
 
 	class cast_from_json
 	    : public node_assert_eq<
-	          ::testing::TestWithParam<nav_testcase<std::string>>> {
+	          ::testing::TestWithParam<nav_testcase<json::string>>> {
 	protected:
 		template <typename Value>
 		void path(ParamType const& param, Value&& value) {
 			auto actual =
-			    json::cast_from_json<std::string>(value, as_str(param.path));
+			    json::cast_from_json<string>(value, as_str(param.path));
 			if (!param.expected) {
 				ASSERT_EQ(nullptr, actual);
 				return;
@@ -235,56 +235,56 @@ namespace json::testing {
 		path(param, cast<map>(copy));
 	}
 
-	static const nav_testcase<std::string> strings[] = {
+	static const nav_testcase<json::string> strings[] = {
 	    {
 	        "single_level"sv,
-	        "key",
-	        map{{"key", "value"}},
-	        "value",
+	        u8"key",
+	        map{{u8"key", u8"value"}},
+	        u8"value",
 	    },
 	    {
 	        "single_level_nonstring"sv,
-	        "key",
-	        map{{"key", false}},
+	        u8"key",
+	        map{{u8"key", false}},
 	    },
 	    {
 	        "single_level_missing"sv,
-	        "key2",
-	        map{{"key", "value"}},
+	        u8"key2",
+	        map{{u8"key", u8"value"}},
 	    },
 	    {
 	        "multi_level"sv,
-	        "key.sub1.sub2",
+	        u8"key.sub1.sub2",
 	        map{{
-	            "key",
+	            u8"key",
 	            map{{
-	                "sub1",
-	                map{{"sub2", "answer"}},
+	                u8"sub1",
+	                map{{u8"sub2", u8"answer"}},
 	            }},
 	        }},
-	        "answer",
+	        u8"answer",
 	    },
 	    {
 	        "multi_level_nonstring"sv,
-	        "key.sub1.sub2",
+	        u8"key.sub1.sub2",
 	        map{{
-	            "key",
+	            u8"key",
 	            map{{
-	                "sub1",
-	                map{{"sub2", 3.14}},
+	                u8"sub1",
+	                map{{u8"sub2", 3.14}},
 	            }},
 	        }},
 	    },
 	    {
 	        "multi_level_missing"sv,
-	        "key.sub1.sub2",
+	        u8"key.sub1.sub2",
 	        map{{
-	            "key",
+	            u8"key",
 	            map{{
-	                "subA",
+	                u8"subA",
 	                map{
-	                    {"sub2", 3.14},
-	                    {"unused", 2.71},
+	                    {u8"sub2", 3.14},
+	                    {u8"unused", 2.71},
 	                },
 	            }},
 	        }},

@@ -12,17 +12,15 @@ using namespace std::literals;
 
 namespace json {
 	namespace {
-		std::string as_str(std::string_view view) {
-			return {view.data(), view.size()};
-		}
+		string as_str(string_view view) { return {view.data(), view.size()}; }
 
-		std::vector<std::string> split_s(char sep, std::string_view data) {
-			std::vector<std::string> result{};
+		std::vector<string> split_s(char sep, string_view data) {
+			std::vector<string> result{};
 
 			auto pos = data.find(sep);
 			decltype(pos) prev = 0;
 
-			while (pos != std::string_view::npos) {
+			while (pos != string_view::npos) {
 				auto const view = data.substr(prev, pos - prev);
 				prev = pos + 1;
 				pos = data.find(sep, prev);
@@ -32,6 +30,11 @@ namespace json {
 			result.push_back(as_str(data.substr(prev)));
 
 			return result;
+		}
+
+		std::u8string as_u8(std::string_view view) {
+			return {reinterpret_cast<char8_t const*>(view.data()),
+			        view.length()};
 		}
 	}  // namespace
 
@@ -47,7 +50,7 @@ namespace json {
 
 	template <typename Map>
 	typename copy_const<Map, node>::type* from_json_impl(Map& value,
-	                                                     std::string_view key) {
+	                                                     string_view key) {
 		using ret_type = typename copy_const<Map, node>::type;
 		auto path = split_s('.', key);
 
@@ -71,24 +74,24 @@ namespace json {
 		return ctx;
 	}
 
-	node* from_json(map& value, std::string_view path) {
+	node* from_json(map& value, string_view path) {
 		return from_json_impl(value, path);
 	}
 
-	node const* from_json(map const& value, std::string_view path) {
+	node const* from_json(map const& value, string_view path) {
 		return from_json_impl(value, path);
 	}
 
 	namespace {
 		using uchar = unsigned char;
-		using iterator = std::string_view::iterator;
+		using iterator = string_view::iterator;
 
 		void skip_ws(iterator&, iterator const&, read_mode mode);
 		node read_string(iterator&, iterator const&, read_mode mode);
 		node read_number(iterator&, iterator const&, read_mode mode);
 		node read_keyword(iterator&, iterator const&, read_mode mode);
 
-		void encode(uint32_t ch, std::string& target);
+		void encode(uint32_t ch, string& target);
 
 		void skip_ws(iterator& it, iterator const& end, read_mode mode) {
 			if (mode == read_mode::strict) {
@@ -219,11 +222,11 @@ namespace json {
 			                   node& val) final;
 
 		private:
-			std::optional<std::string> read_object_key(iterator& it,
-			                                           iterator const& end,
-			                                           read_mode mode);
+			std::optional<string> read_object_key(iterator& it,
+			                                      iterator const& end,
+			                                      read_mode mode);
 			map result{};
-			std::string current_key_{};
+			string current_key_{};
 		};
 
 		reader_result value_reader::read(iterator& it,
@@ -343,7 +346,7 @@ namespace json {
 			return node{std::move(result)};
 		}
 
-		std::optional<std::string> object_reader::read_object_key(
+		std::optional<string> object_reader::read_object_key(
 		    iterator& it,
 		    iterator const& end,
 		    read_mode mode) {
@@ -354,8 +357,8 @@ namespace json {
 
 			if (*it == '"' || *it == '\'') {
 				auto val = read_string(it, end, mode);
-				if (std::holds_alternative<std::string>(val))
-					return std::get<std::string>(val);
+				if (std::holds_alternative<string>(val))
+					return std::get<string>(val);
 				return std::nullopt;
 			}
 
@@ -365,9 +368,9 @@ namespace json {
 			    *it == '+') {
 				auto val = read_number(it, end, mode);
 				if (std::holds_alternative<long long>(val))
-					return std::to_string(std::get<long long>(val));
+					return as_u8(std::to_string(std::get<long long>(val)));
 				if (std::holds_alternative<double>(val))
-					return std::to_string(std::get<double>(val));
+					return as_u8(std::to_string(std::get<double>(val)));
 				return std::nullopt;
 			}
 
@@ -375,7 +378,7 @@ namespace json {
 			while (it != end && *it != ':' &&
 			       !std::isspace(static_cast<uchar>(*it)))
 				++it;
-			return std::string{start, it};
+			return string{start, it};
 		}
 
 		unsigned hex_digit(char c) {
@@ -471,7 +474,7 @@ namespace json {
 			auto tmplt = *it;
 			++it;
 
-			std::string result{};
+			string result{};
 			bool in_string = true;
 			bool in_escape = false;
 			while (it != end && in_string) {
@@ -731,12 +734,12 @@ namespace json {
 			auto start = it;
 			while (it != end && std::isalpha(static_cast<uchar>(*it)))
 				++it;
-			std::string_view view{&*start, static_cast<size_t>(it - start)};
-			if (view == "null") return nullptr;
-			if (view == "true") return true;
-			if (view == "false") return false;
+			string_view view{&*start, static_cast<size_t>(it - start)};
+			if (view == u8"null"sv) return nullptr;
+			if (view == u8"true"sv) return true;
+			if (view == u8"false"sv) return false;
 			if (mode == read_mode::strict) return {};
-			if (view == "undefined") return nullptr;
+			if (view == u8"undefined"sv) return nullptr;
 			return {};
 		}
 
@@ -757,7 +760,7 @@ namespace json {
 		static constexpr const uint32_t byteMask = 0xBF;
 		static constexpr const uint32_t byteMark = 0x80;
 
-		void encode(uint32_t ch, std::string& target) {
+		void encode(uint32_t ch, string& target) {
 			unsigned short bytesToWrite = 0;
 
 			/* Figure out how many bytes the result will require */
@@ -808,41 +811,41 @@ namespace json {
 
 			template <typename T>
 			void operator()(T const&) const {
-				printer.write("undefined"sv);  // monspace, lambda and object
+				printer.write(u8"undefined"sv);  // monspace, lambda and object
 			}
 
-			void operator()(std::nullptr_t) const { printer.write("null"sv); }
+			void operator()(std::nullptr_t) const { printer.write(u8"null"sv); }
 
 			void operator()(bool value) const {
-				printer.write(value ? "true"sv : "false"sv);
+				printer.write(value ? u8"true"sv : u8"false"sv);
 			}
 
 			void operator()(long long value) const {
 				char buffer[200];
 				auto length = snprintf(buffer, sizeof(buffer), "%lld", value);
-				printer.write({buffer, static_cast<size_t>(length)});
+				printer.write({reinterpret_cast<char8_t const*>(buffer),
+				               static_cast<size_t>(length)});
 			}
 
 			void operator()(double value) const {
 				char buffer[200];
 				auto length = snprintf(buffer, sizeof(buffer), "%g", value);
-				printer.write({buffer, static_cast<size_t>(length)});
+				printer.write({reinterpret_cast<char8_t const*>(buffer),
+				               static_cast<size_t>(length)});
 			}
 
-			void operator()(std::string const& value) const {
-				write_string(value);
-			}
+			void operator()(string const& value) const { write_string(value); }
 
 			void operator()(map const& values) const {
 				if (values.empty()) {
-					printer.write("{}"sv);
+					printer.write(u8"{}"sv);
 					return;
 				}
 				printer.write('{');
 				if (values.size() == 1) {
 					auto const& [key, value] = *values.begin();
 					write_string(key);
-					printer.write(": "sv);
+					printer.write(u8": "sv);
 					writer{printer, indent_size}.write(value);
 					printer.write('}');
 					return;
@@ -855,9 +858,9 @@ namespace json {
 						printer.write(',');
 
 					indent();
-					printer.write("    "sv);
+					printer.write(u8"    "sv);
 					write_string(key);
-					printer.write(": "sv);
+					printer.write(u8": "sv);
 					writer{printer, indent_size + 1}.write(value);
 				}
 				indent();
@@ -866,7 +869,7 @@ namespace json {
 
 			void operator()(array const& values) const {
 				if (values.empty()) {
-					printer.write("[]"sv);
+					printer.write(u8"[]"sv);
 					return;
 				}
 				printer.write('[');
@@ -884,7 +887,7 @@ namespace json {
 						printer.write(',');
 
 					indent();
-					printer.write("    "sv);
+					printer.write(u8"    "sv);
 					writer{printer, indent_size + 1}.write(value);
 				}
 				indent();
@@ -894,10 +897,10 @@ namespace json {
 			void indent() const {
 				printer.write('\n');
 				for (unsigned counter = 0; counter < indent_size; ++counter)
-					printer.write("    "sv);
+					printer.write(u8"    "sv);
 			}
 
-			void write_string(std::string const& s) const {
+			void write_string(string const& s) const {
 				printer.write('"');
 				for (auto c : s) {
 					switch (c) {
@@ -908,25 +911,25 @@ namespace json {
 								printer.write(c);
 							break;
 						case '\"':
-							printer.write("\\\""sv);
+							printer.write(u8"\\\""sv);
 							break;
 						case '\\':
-							printer.write("\\\\"sv);
+							printer.write(u8"\\\\"sv);
 							break;
 						case '\b':
-							printer.write("\\b"sv);
+							printer.write(u8"\\b"sv);
 							break;
 						case '\f':
-							printer.write("\\f"sv);
+							printer.write(u8"\\f"sv);
 							break;
 						case '\n':
-							printer.write("\\n"sv);
+							printer.write(u8"\\n"sv);
 							break;
 						case '\r':
-							printer.write("\\r"sv);
+							printer.write(u8"\\r"sv);
 							break;
 						case '\t':
-							printer.write("\\t"sv);
+							printer.write(u8"\\t"sv);
 							break;
 					}
 				}
@@ -935,10 +938,22 @@ namespace json {
 
 			void write_control(char c) const {
 				char buff[10];
+#ifdef _MSC_VER
+#pragma warning(push)
+// 'sprintf': This function or variable may be unsafe. Consider using sprintf_s
+// instead.
+
+// Well, no
+#pragma warning(disable : 4996)
+#endif
 				auto const len =
 				    sprintf(buff, "%04x", static_cast<unsigned char>(c));
-				printer.write("\\u"sv);
-				printer.write({buff, static_cast<size_t>(len)});
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+				printer.write(u8"\\u"sv);
+				printer.write({reinterpret_cast<char8_t const*>(buff),
+				               static_cast<size_t>(len)});
 			}
 		};
 
@@ -946,7 +961,7 @@ namespace json {
 		public:
 			file_output(FILE* file) : file_{file} {};
 
-			void write(std::string_view str) override {
+			void write(string_view str) override {
 				std::fwrite(str.data(), 1, str.size(), file_);
 			}
 			void write(char c) override { std::fputc(c, file_); }
@@ -957,19 +972,17 @@ namespace json {
 
 		class string_output final : public output {
 		public:
-			string_output(std::string& str) : str_{str} {};
+			string_output(string& str) : str_{str} {};
 
-			void write(std::string_view str) override { str_.append(str); }
+			void write(string_view str) override { str_.append(str); }
 			void write(char c) override { str_.push_back(c); }
 
 		private:
-			std::string& str_;
+			string& str_;
 		};
 	}  // namespace
 
-	node read_json(std::string_view text,
-	               std::string_view skip,
-	               read_mode mode) {
+	node read_json(string_view text, string_view skip, read_mode mode) {
 		if (!skip.empty() && text.substr(0, skip.size()) == skip)
 			text = text.substr(skip.size());
 
@@ -1019,9 +1032,9 @@ namespace json {
 		write_json(printer, value);
 	}
 
-	void write_json(std::string& output, node const& value) {
+	void write_json(string& output, node const& value) {
 		output.clear();
 		string_output printer{output};
 		write_json(printer, value);
 	}
-}  // namespace mstch
+}  // namespace json

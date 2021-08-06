@@ -90,6 +90,10 @@ set_target_properties(json PROPERTIES
 target_include_directories(json PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(json PRIVATE ${ADDITIONAL_WALL_FLAGS})
 
+if (MSVC)
+	target_sources(json PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/vs/u8string.natvis)
+endif()
+
 ##################################################################
 ##  TESTING
 ##################################################################

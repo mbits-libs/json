@@ -6,6 +6,12 @@
 
 Open-source library implementing JSON parser and writer using . It assumes all strings are UTF-8, including the argument to the parser.
 
+## Strings in C++20
+
+C++20 introduces both `char8_t` with `std::u8string` and `std::u8string_view`. It also deprecates `u8path` in favor of `path` constructor taking `std::u8string const&`. The intertpretation there is, paths created from `char`-based strings represent current OS settings, while paths created from `char8_t`-based strings represent paths, that are OS-independent.
+
+This library copies this assumption. The text to read from and write to are both `char8_t`-based strings, as well as indexes to maps and strings held by a JSON node. There are `char8_t` aliases provided for both `json::string` and `json::string_view` and `cast<>` and `cast_from_json<>` will not accept `std::string`.
+
 ## Synopsis
 
 ```cpp
@@ -36,7 +42,7 @@ Parses the input to a `node`. If the input text cannot be parsed, returned `node
 If the `skip` is present at the start of `text`, it will be removed before handiong over to the parser. This helps in formatting JSONs returned by some services. For instance responses from Gerrit could be parsed with:
 
 ```cpp
-auto result = json::read_json(result_text, ")]}'\n"sv);
+auto result = json::read_json(result_text, u8")]}'\n"sv);
 ```
 
 The `read_mode::strict` accepts only JSON input, while `read_mode::ECMA` allows grammar similar to JavaScript, with `'apostrophe enclosed strings'` and commas at the end of dictionaries and array.
@@ -101,7 +107,7 @@ node* from_json(map* value, json::string_view path);
 node const* from_json(map const* value, json::string_view path);
 ```
 
-Locates a `node` inside a possibly multi-level `map`. The `path` is a dot-separated list of keys. For instance, `from_json(dict, "object.subobject.property")` will lookup:
+Locates a `node` inside a possibly multi-level `map`. The `path` is a dot-separated list of keys. For instance, `from_json(dict, u8"object.subobject.property")` will lookup:
 
 - `"object"` in `dict`, then
 - `"subobject"` in `*cast<map>(dict["object"])`, finally

@@ -23,14 +23,14 @@ namespace json::testing {
 	TEST_F(write_test, map_to_stdout) {
 		std_capture out;
 		out.lock();
-		write_json(stdout, json::map{{"key", "value"}});
+		write_json(stdout, json::map{{u8"key", u8"value"}});
 		out.unlock();
 		ASSERT_EQ("{\"key\": \"value\"}", out.str());
 	}
 
 	TEST_P(write_test, identity) {
 		auto& param = GetParam();
-		std::string text;
+		json::string text;
 		write_json(text, param.node);
 		auto const actual = read_json(text);
 
@@ -38,7 +38,7 @@ namespace json::testing {
 		if (HasFatalFailure())
 			std::cout << "Expected: " << param.node << '\n'
 			          << "  Actual: " << actual << '\n'
-			          << "  String: " << cxx_string{text} << '\n'
+			          << "  String: " << cxx_u8string{text} << '\n'
 			          << "          " << text << '\n';
 	}
 
@@ -57,43 +57,43 @@ namespace json::testing {
 	    {
 	        "map"sv,
 	        map{
-	            {"zero", 0ll},
-	            {"integer", 1ll},
-	            {"floating", 2.5},
-	            {"nullptr", nullptr},
-	            {"boolA", true},
-	            {"boolB", false},
-	            {"map", map{}},
+	            {u8"zero", 0ll},
+	            {u8"integer", 1ll},
+	            {u8"floating", 2.5},
+	            {u8"nullptr", nullptr},
+	            {u8"boolA", true},
+	            {u8"boolB", false},
+	            {u8"map", map{}},
 	            {
-	                "map2",
+	                u8"map2",
 	                map{
-	                    {"zero", 0ll},
-	                    {"integer", 1ll},
-	                    {"floating", 2.5},
-	                    {"nullptr", nullptr},
-	                    {"boolA", true},
-	                    {"boolB", false},
-	                    {"map", map{}},
+	                    {u8"zero", 0ll},
+	                    {u8"integer", 1ll},
+	                    {u8"floating", 2.5},
+	                    {u8"nullptr", nullptr},
+	                    {u8"boolA", true},
+	                    {u8"boolB", false},
+	                    {u8"map", map{}},
 	                },
 	            },
 	        },
 	    },
 	    {
 	        "string_controls"sv,
-	        "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020"
+	        u8"\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020"
 	        "\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037",
 	    },
 	    {
 	        "string_embedded_null"sv,
-	        "aaa\000bbb"s,
+	        u8"aaa\000bbb"s,
 	    },
 	    {
 	        "string_escaped_quote"sv,
-	        "\"title\"",
+	        u8"\"title\"",
 	    },
 	    {
 	        "string_many_escapes"sv,
-	        "\\\\\\\\\\\"",
+	        u8"\\\\\\\\\\\"",
 	    },
 	};
 
