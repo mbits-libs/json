@@ -58,7 +58,7 @@ namespace json {
 
 		size_t count = path.size();
 		for (size_t index = 1; index < count; ++index) {
-			auto* dict = json::cast<map>(*ctx);
+			auto* dict = cast<map>(*ctx);
 			if (!dict) return nullptr;
 
 			auto const& property = path[index];

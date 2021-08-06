@@ -80,10 +80,6 @@ namespace json::testing {
 			        std::remove_cv_t<std::remove_reference_t<decltype(value)>>;
 			    if constexpr (std::is_same_v<type, std::monostate>) {
 				    out << "node{}";
-			    } else if constexpr (std::is_same_v<type, json::object> ||
-			                         std::is_same_v<type, json::callback> ||
-			                         std::is_same_v<type, json::lambda>) {
-				    out << "???";
 			    } else if constexpr (std::is_same_v<type, long long>) {
 				    out << value << "ll";
 			    } else if constexpr (std::is_same_v<type, double>) {
@@ -130,8 +126,7 @@ namespace json::testing {
 		                std::string const& path) {
 			static constexpr char const* types[] = {
 			    "monostate", "null", "string", "long long",
-			    "double",    "bool", "lambda", "object",
-			    "callback",  "map",  "array"};
+			    "double",    "bool", "map",  "array"};
 
 			ASSERT_STREQ(types[expected_node.index()],
 			             types[actual_node.index()])
@@ -142,8 +137,7 @@ namespace json::testing {
 				    using type = std::remove_cv_t<
 				        std::remove_reference_t<decltype(expected)>>;
 				    auto const& actual = std::get<type>(actual_node);
-				    if constexpr (std::is_same_v<type, json::lambda>) {
-				    } else if constexpr (std::is_same_v<type, json::map>) {
+				    if constexpr (std::is_same_v<type, json::map>) {
 					    ASSERT_EQ(expected.size(), actual.size())
 					        << "Path: " << path;
 					    for (auto const& [fld, exp_value] : expected) {

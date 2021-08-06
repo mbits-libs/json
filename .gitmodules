@@ -1,6 +1,3 @@
-[submodule "external/libmstch"]
-	path = external/libmstch
-	url = https://github.com/mbits-libs/libmstch.git
 [submodule "tools/coveralls"]
 	path = tools/coveralls
 	url = https://github.com/mbits-libs/coveralls.git

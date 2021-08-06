@@ -3,17 +3,53 @@
 
 #pragma once
 
-#include <mstch/mstch.hpp>
+#include <map>
 #include <optional>
+#include <string>
 #include <string_view>
+#include <variant>
+#include <vector>
 
 namespace json {
-	using mstch::array;
-	using mstch::callback;
-	using mstch::lambda;
-	using mstch::map;
-	using mstch::node;
-	using mstch::object;
+	using string = std::string;
+	using string_view = std::string_view;
+
+	struct node : std::variant<std::monostate,
+	                           std::nullptr_t,
+	                           string,
+	                           long long,
+	                           double,
+	                           bool,
+	                           std::map<string, node>,
+	                           std::vector<node>> {
+		using map_type = std::map<string, node>;
+		using vector_type = std::vector<node>;
+
+		using base_type = std::variant<std::monostate,
+		                               std::nullptr_t,
+		                               string,
+		                               long long,
+		                               double,
+		                               bool,
+		                               map_type,
+		                               vector_type>;
+
+		using base_type::base_type;
+
+		node() : base_type(std::in_place_type<std::monostate>) {}
+
+		node(const char8_t* value)
+		    : node(reinterpret_cast<const char*>(value)) {}
+		node(const char* value)
+		    : base_type(std::in_place_type<string>,
+		                reinterpret_cast<const char*>(value)) {}
+
+		base_type& base() { return *this; }
+		base_type const& base() const { return *this; }
+	};
+
+	using map = std::map<string, node>;
+	using array = std::vector<node>;
 
 	template <typename Kind>
 	static inline Kind* cast(node& value) {

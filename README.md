@@ -1,10 +1,10 @@
-# UTF converter
+# JSON parser
 
 [![Travis (.org)][Travis badge]][Travis]
 [![Coveralls github][Coveralls badge]][Coveralls]
-[![Cpp Standard][17-badge]][17]
+[![Cpp Standard][20-badge]][20]
 
-Open-source library implementing JSON parser and writer in terms of [Mustache](https://github.com/mbits-libs/libmstch) library, which is a clone of [no1msd's](https://github.com/no1msd/mstch) implementation with couple of small changes. It assumes all strings are UTF-8, including the argument to the parser.
+Open-source library implementing JSON parser and writer using . It assumes all strings are UTF-8, including the argument to the parser.
 
 ## Synopsis
 
@@ -12,19 +12,28 @@ Open-source library implementing JSON parser and writer in terms of [Mustache](h
 #include <json/json.hpp>
 ```
 
+### json::NodeType&lt;Kind&gt;
+
+```cpp
+template <typename Kind>
+concept json::NodeType;
+```
+
+A concept accepting only the types `json::node` can hold (with exception of `std::monostate`). It is used by all the `json::cast` and `json::cast_from_json` to weed out incompatible `Kind` arguments, especially wrong types of strings.
+
 ### json::read_json
 
 ```cpp
 enum class json::read_mode { strict, ECMA };
 json::node json::read_json(
-    std::string_view text,
-    std::string_view skip = {},
+    json::string_view text,
+    json::string_view skip = {},
     json::read_mode mode = json::read_mode::strict);
 ```
 
 Parses the input to a `node`. If the input text cannot be parsed, returned `node` will hold `std::monostate`.
 
-If the `skip` is present at the start of `text`, it will be removed before handing over to the parser. This helps in formatting JSONs returned by some services. For instance responses from Gerrit could be parsed with:
+If the `skip` is present at the start of `text`, it will be removed before handiong over to the parser. This helps in formatting JSONs returned by some services. For instance responses from Gerrit could be parsed with:
 
 ```cpp
 auto result = json::read_json(result_text, ")]}'\n"sv);
@@ -37,22 +46,22 @@ The `read_mode::strict` accepts only JSON input, while `read_mode::ECMA` allows 
 ```cpp
 void write_json(output&, node const&);
 void write_json(FILE*, node const&);
-void write_json(std::string&, node const&);
+void write_json(json::string&, node const&);
 ```
 
-Formats the `node` value to provided output. If the node contains only JSON-compatible values, the outpout is a valid JSON document. If the node contains a lambda, callback, dynamic object or a `std::monostate`, the output will contain a `"undefined"`, which will disqualify the result as a valid JSON.
+Formats the `node` value to provided output. If the node contains only JSON-compatible values, the outpout is a valid JSON document. If the node contains a `std::monostate`, the output will contain a `"undefined"`, which will disqualify the result as a valid JSON.
 
 ### json::output
 
 ```cpp
 struct output {
     virtual ~output();
-    virtual void write(std::string_view) = 0;
+    virtual void write(json::string_view) = 0;
     virtual void write(char) = 0;
 };
 ```
 
-Used internally by `write_json` function to output the formatted text. Library contains implementation backed by `FILE*` and `std::string` reference, but users can provide their own backends.
+Used internally by `write_json` function to output the formatted text. Library contains implementation backed by `FILE*` and `json::string` reference, but users can provide their own backends.
 
 ### json::cast&lt;Kind&gt;
 
@@ -66,19 +75,19 @@ Kind const* cast(node const* value);
 Casts the node to the expected type. If the node holds that particular alternative, the function returns pointer to the value. Otherwise, it returns `nullptr`. Versions taking pointers will also return `nullptr` if input pointer is null.
 
 ```cpp
-Kind* cast(map& value, std::string const& key);
-Kind const* cast(map const& value, std::string const& key);
-Kind* cast(map* value, std::string const& key);
-Kind const* cast(map const* value, std::string const& key);
+Kind* cast(map& value, json::string const& key);
+Kind const* cast(map const& value, json::string const& key);
+Kind* cast(map* value, json::string const& key);
+Kind const* cast(map const* value, json::string const& key);
 ```
 
 Looks up the `key` in the map and then casts the mapped node to the expected type. Will return `nullptr`, if input pointer is null, if `key` is not found inside map or if mapped value cannot be cast.
 
 ```cpp
-Kind* cast(node& value, std::string const& key);
-Kind const* cast(node const& value, std::string const& key);
-Kind* cast(node* value, std::string const& key);
-Kind const* cast(node const* value, std::string const& key);
+Kind* cast(node& value, json::string const& key);
+Kind const* cast(node const& value, json::string const& key);
+Kind* cast(node* value, json::string const& key);
+Kind const* cast(node const* value, json::string const& key);
 ```
 
 Equivalent of `cast<Kind>(cast<map>(value), key);`
@@ -86,10 +95,10 @@ Equivalent of `cast<Kind>(cast<map>(value), key);`
 ### json::from_json
 
 ```cpp
-node* from_json(map& value, std::string_view path);
-node const* from_json(map const& value, std::string_view path);
-node* from_json(map* value, std::string_view path);
-node const* from_json(map const* value, std::string_view path);
+node* from_json(map& value, json::string_view path);
+node const* from_json(map const& value, json::string_view path);
+node* from_json(map* value, json::string_view path);
+node const* from_json(map const* value, json::string_view path);
 ```
 
 Locates a `node` inside a possibly multi-level `map`. The `path` is a dot-separated list of keys. For instance, `from_json(dict, "object.subobject.property")` will lookup:
@@ -101,10 +110,10 @@ Locates a `node` inside a possibly multi-level `map`. The `path` is a dot-separa
 Will return `nullptr` is it fails at any of those steps.
 
 ```cpp
-node* from_json(node& value, std::string_view path);
-node const* from_json(node const& value, std::string_view path);
-node* from_json(node* value, std::string_view path);
-node const* from_json(node const* value, std::string_view path);
+node* from_json(node& value, json::string_view path);
+node const* from_json(node const& value, json::string_view path);
+node* from_json(node* value, json::string_view path);
+node const* from_json(node const* value, json::string_view path);
 ```
 
 Equivalent of `from_json(cast<map>(value), key);`
@@ -112,14 +121,14 @@ Equivalent of `from_json(cast<map>(value), key);`
 ### json::cast_from_json&lt;Kind&gt;
 
 ```cpp
-Kind* cast_from_json(map& value, std::string const& path);
-Kind const* cast_from_json(map const& value, std::string const& path);
-Kind* cast_from_json(map* value, std::string const& path);
-Kind const* cast_from_json(map const* value, std::string const& path);
-Kind* cast_from_json(node& value, std::string const& path);
-Kind const* cast_from_json(node const& value, std::string const& path);
-Kind* cast_from_json(node* value, std::string const& path);
-Kind const* cast_from_json(node const* value, std::string const& path);
+Kind* cast_from_json(map& value, json::string_view const& path);
+Kind const* cast_from_json(map const& value, json::string_view const& path);
+Kind* cast_from_json(map* value, json::string_view const& path);
+Kind const* cast_from_json(map const* value, json::string_view const& path);
+Kind* cast_from_json(node& value, json::string_view const& path);
+Kind const* cast_from_json(node const& value, json::string_view const& path);
+Kind* cast_from_json(node* value, json::string_view const& path);
+Kind const* cast_from_json(node const* value, json::string_view const& path);
 ```
 
 Equivalent of `cast<Kind>(from_json(value, key));`
@@ -128,5 +137,5 @@ Equivalent of `cast<Kind>(from_json(value, key));`
 [Travis]: https://travis-ci.org/mbits-libs/libmstch-json "Travis-CI"
 [Coveralls badge]: https://img.shields.io/coveralls/github/mbits-libs/libmstch-json?style=flat-square
 [Coveralls]: https://coveralls.io/github/mbits-libs/libmstch-json "Coveralls"
-[17-badge]: https://img.shields.io/badge/C%2B%2B-17-informational?style=flat-square
-[17]: https://en.wikipedia.org/wiki/C%2B%2B17 "Wikipedia C++17"
+[20-badge]: https://img.shields.io/badge/C%2B%2B-20-informational?style=flat-square
+[20]: https://en.wikipedia.org/wiki/C%2B%2B20 "Wikipedia C++20"

@@ -81,8 +81,6 @@ endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-add_subdirectory(external)
-
 add_library(json STATIC
     src/json.cpp
     include/json/json.hpp)
@@ -91,7 +89,6 @@ set_target_properties(json PROPERTIES
 	SOVERSION ${PROJECT_VERSION_MAJOR})
 target_include_directories(json PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(json PRIVATE ${ADDITIONAL_WALL_FLAGS})
-target_link_libraries(json PUBLIC mstch)
 
 ##################################################################
 ##  TESTING
