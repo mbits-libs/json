@@ -1,10 +1,9 @@
 # JSON parser
 
-[![Travis (.org)][Travis badge]][Travis]
 [![Coveralls github][Coveralls badge]][Coveralls]
 [![Cpp Standard][20-badge]][20]
 
-Open-source library implementing JSON parser and writer using . It assumes all strings are UTF-8, including the argument to the parser.
+Open-source library implementing JSON parser and writer using C++17 `std::variant`. It assumes all strings are UTF-8, including the argument to the parser.
 
 ## Strings in C++20
 
@@ -139,8 +138,6 @@ Kind const* cast_from_json(node const* value, json::string_view const& path);
 
 Equivalent of `cast<Kind>(from_json(value, key));`
 
-[Travis badge]: https://img.shields.io/travis/mbits-libs/libmstch-json?style=flat-square
-[Travis]: https://travis-ci.org/mbits-libs/libmstch-json "Travis-CI"
 [Coveralls badge]: https://img.shields.io/coveralls/github/mbits-libs/libmstch-json?style=flat-square
 [Coveralls]: https://coveralls.io/github/mbits-libs/libmstch-json "Coveralls"
 [20-badge]: https://img.shields.io/badge/C%2B%2B-20-informational?style=flat-square
