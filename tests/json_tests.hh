@@ -721,10 +721,12 @@ namespace json::testing {
 			"n_string_with_trailing_garbage"sv,
 			u8"\"\"x"sv,
 		},
+#ifndef _MSC_VER
 		{
 			"n_structure_100000_opening_arrays",
 #include "n_structure_100000_opening_arrays.inc"
 		},
+#endif
 		{
 			"n_structure_angle_bracket_."sv,
 			u8"<.>"sv,
@@ -817,10 +819,12 @@ namespace json::testing {
 			"n_structure_open_array_comma"sv,
 			u8"[,"sv,
 		},
+#ifndef _MSC_VER
 		{
 			"n_structure_open_array_object",
 #include "n_structure_open_array_object.inc"
 		},
+#endif
 		{
 			"n_structure_open_array_open_object"sv,
 			u8"[{"sv,
