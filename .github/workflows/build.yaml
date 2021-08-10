@@ -8,35 +8,34 @@ jobs:
     strategy:
       matrix:
         config:
-          - name: "Ubuntu"
+          - name: "Ubuntu/gcc-11/Release"
             os: ubuntu-latest
             build_type: "Release"
             cc: "gcc-11"
             cxx: "g++-11"
             generators: "Ninja"
-            coveralls: true
-
-          - name: "Ubuntu (Clang)"
-            os: ubuntu-latest
-            build_type: "Release"
-            cc: "clang-12"
-            cxx: "clang++-12"
-            generators: "Ninja"
             coveralls: false
 
-          - name: "Windows"
+          - name: "Ubuntu/gcc-11/Debug"
+            os: ubuntu-latest
+            build_type: "Debug"
+            cc: "gcc-11"
+            cxx: "g++-11"
+            generators: "Ninja"
+            coveralls: true
+
+          - name: "Windows x86_64/Release"
             os: windows-latest
             build_type: "Release"
-            generators: "Visual Studio 17 2022"
+            generators: "Visual Studio 16 2019"
             gen_arch: "x64"
             coveralls: false
 
-          - name: "macOS"
-            os: macos-latest
+          - name: "Windows x86_32/Release"
+            os: windows-latest
             build_type: "Release"
-            cc: "clang"
-            cxx: "clang++"
-            generators: "Ninja"
+            generators: "Visual Studio 16 2019"
+            gen_arch: "Win32"
             coveralls: false
 
     env:
@@ -53,20 +52,11 @@ jobs:
       with:
         submodules: true
 
-    - name: Get compilers (GCC/Ubuntu)
-      if: ${{ startsWith(matrix.config.os, 'ubuntu-') && startsWith(matrix.config.cc, 'gcc-') }}
-      run: |
+    - name: Get compilers (Ubuntu)
+      if: startsWith(matrix.config.os, 'ubuntu-')
+      run:   |
          sudo apt update
          sudo apt install ${{env.CC}} ${{env.CXX}}
-      shell: bash
-
-    - name: Get compilers (Clang/Ubuntu)
-      if: ${{ startsWith(matrix.config.os, 'ubuntu-') && startsWith(matrix.config.cc, 'clang-') }}
-      run: |
-         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-         echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main" | sudo tee /etc/apt/sources.list.d/llvm.list
-         sudo apt update
-         sudo apt install ${{ env.CC }}
       shell: bash
 
     - name: Add MSBuild to PATH (Windows)
@@ -80,17 +70,16 @@ jobs:
     - name: Get Conan
       uses: turtlebrowser/get-conan@v1.0
   
-    - name: Configure Conan (GCC/Clang)
-      if: ${{startsWith(matrix.config.cc, 'gcc-') || (startsWith(matrix.config.os, 'ubuntu-') && startsWith(matrix.config.cc, 'clang-')) }}
+    - name: Configure Conan (GCC)
+      if: startsWith(matrix.config.cc, 'gcc-')
       run: |
         conan install "${{github.workspace}}" -if "${{github.workspace}}/build" --build missing -s build_type=${{env.BUILD_TYPE}}
         conan profile update settings.compiler.libcxx=libstdc++11 default
-
     - name: Configure Conan
       run: conan install "${{github.workspace}}" -if "${{github.workspace}}/build" --build missing -s build_type=${{env.BUILD_TYPE}}
 
     - name: Configure CMake
-      run: cmake -G "${{ matrix.config.generators }}" -A "${{ matrix.config.gen_arch }}" -B "${{github.workspace}}/build" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DJSON_TESTING=ON -DJSON_COVERALLS=${{env.COV}} -DJSON_COVERALLS_UPLOAD=${{env.COV_UP}} -DJSON_COVERALLS_DEBUG=${{env.COV}}
+      run: cmake -G "${{ matrix.config.generators }}" -A "${{ matrix.config.gen_arch }}" -B "${{github.workspace}}/build" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DJSON_TESTING=ON -DJSON_COVERALLS=${{env.COV}} -DJSON_COVERALLS_UPLOAD=${{env.COV_UP}}
 
     - name: Build
       run: cmake --build "${{github.workspace}}/build" --config ${{env.BUILD_TYPE}} --parallel
@@ -106,27 +95,3 @@ jobs:
       run: cmake --build . --config ${{env.BUILD_TYPE}} --target JSON_coveralls --parallel
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-
-    - name: Upload tests results
-      if: $${{ success() || failure() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: test-xml
-        path: ${{github.workspace}}/build/testing-results/*.xml
-
-  publish-test-results:
-    name: Publish tests results
-    needs: build
-    runs-on: ubuntu-latest
-    if: $${{ success() || failure() }}
-
-    steps:
-      - name: Download XML Files
-        uses: actions/download-artifact@v2
-        with:
-          path: artifacts
-
-      - name: Publish results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        with:
-          files: artifacts/**/*.xml
