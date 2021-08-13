@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <stack>
 #include <json/json.hpp>
 
@@ -14,7 +15,8 @@ namespace json {
 	namespace {
 		string as_str(string_view view) { return {view.data(), view.size()}; }
 
-		std::vector<string> split_s(char sep, string_view data) {
+		std::vector<string> split_s(string_view::value_type sep,
+		                            string_view data) {
 			std::vector<string> result{};
 
 			auto pos = data.find(sep);
@@ -33,7 +35,7 @@ namespace json {
 		}
 
 		std::u8string as_u8(std::string_view view) {
-			return {reinterpret_cast<char8_t const*>(view.data()),
+			return {reinterpret_cast<string::value_type const*>(view.data()),
 			        view.length()};
 		}
 	}  // namespace
@@ -381,7 +383,7 @@ namespace json {
 			return string{start, it};
 		}
 
-		unsigned hex_digit(char c) {
+		unsigned hex_digit(string::value_type c) {
 			switch (c) {
 				case '0':
 				case '1':
@@ -515,8 +517,8 @@ namespace json {
 							if (mode == read_mode::strict) return {};
 							auto const val = hex_escape(it, end);
 							if (val > 255) return {};
-							result.push_back(
-							    static_cast<char>(static_cast<uchar>(val)));
+							result.push_back(static_cast<string::value_type>(
+							    static_cast<uchar>(val)));
 							--it;
 							break;
 						}
@@ -800,7 +802,7 @@ namespace json {
 					    static_cast<uchar>(ch | firstByteMark[bytesToWrite]);
 			}
 			for (int i = 0; i < bytesToWrite; ++i)
-				target.push_back(static_cast<char>(*midp++));
+				target.push_back(static_cast<string::value_type>(*midp++));
 		}
 
 		struct writer {
@@ -823,15 +825,17 @@ namespace json {
 			void operator()(long long value) const {
 				char buffer[200];
 				auto length = snprintf(buffer, sizeof(buffer), "%lld", value);
-				printer.write({reinterpret_cast<char8_t const*>(buffer),
-				               static_cast<size_t>(length)});
+				printer.write(
+				    {reinterpret_cast<string::value_type const*>(buffer),
+				     static_cast<size_t>(length)});
 			}
 
 			void operator()(double value) const {
 				char buffer[200];
 				auto length = snprintf(buffer, sizeof(buffer), "%g", value);
-				printer.write({reinterpret_cast<char8_t const*>(buffer),
-				               static_cast<size_t>(length)});
+				printer.write(
+				    {reinterpret_cast<string::value_type const*>(buffer),
+				     static_cast<size_t>(length)});
 			}
 
 			void operator()(string const& value) const { write_string(value); }
@@ -936,7 +940,7 @@ namespace json {
 				printer.write('"');
 			}
 
-			void write_control(char c) const {
+			void write_control(string::value_type c) const {
 				char buff[10];
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -952,8 +956,9 @@ namespace json {
 #pragma warning(pop)
 #endif
 				printer.write(u8"\\u"sv);
-				printer.write({reinterpret_cast<char8_t const*>(buff),
-				               static_cast<size_t>(len)});
+				printer.write(
+				    {reinterpret_cast<string::value_type const*>(buff),
+				     static_cast<size_t>(len)});
 			}
 		};
 
@@ -964,7 +969,7 @@ namespace json {
 			void write(string_view str) override {
 				std::fwrite(str.data(), 1, str.size(), file_);
 			}
-			void write(char c) override { std::fputc(c, file_); }
+			void write(byte_type c) override { std::fputc(c, file_); }
 
 		private:
 			FILE* file_{};
@@ -975,7 +980,7 @@ namespace json {
 			string_output(string& str) : str_{str} {};
 
 			void write(string_view str) override { str_.append(str); }
-			void write(char c) override { str_.push_back(c); }
+			void write(byte_type c) override { str_.push_back(c); }
 
 		private:
 			string& str_;

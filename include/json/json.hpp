@@ -41,8 +41,7 @@ namespace json {
 		node(const char* value)
 		    : node(reinterpret_cast<const char8_t*>(value)) {}
 		node(const char8_t* value)
-		    : base_type(std::in_place_type<string>,
-		                reinterpret_cast<const char8_t*>(value)) {}
+		    : base_type(std::in_place_type<string>, value) {}
 
 		base_type& base() { return *this; }
 		base_type const& base() const { return *this; }
@@ -220,9 +219,10 @@ namespace json {
 	               read_mode mode = read_mode::strict);
 
 	struct output {
+		using byte_type = string_view::value_type;
 		virtual ~output();
 		virtual void write(string_view) = 0;
-		virtual void write(char) = 0;
+		virtual void write(byte_type) = 0;
 	};
 
 	void write_json(output&, node const&);

@@ -254,7 +254,7 @@ struct cxx_u8string {
 					break;
 				default:
 					if (c <= 0xFF) {
-						if (std::isprint(uc)) {
+						if (std::isprint(static_cast<unsigned char>(uc))) {
 							out << static_cast<char>(c);
 						} else {
 							out << "\\" << std::oct << std::setw(3)
@@ -299,7 +299,7 @@ namespace json::testing {
 				out_ << std::string_view{
 				    reinterpret_cast<char const*>(str.data()), str.size()};
 			}
-			void write(char c) override { out_ << c; }
+			void write(byte_type c) override { out_ << static_cast<char>(c); }
 
 		private:
 			std::ostream& out_;
