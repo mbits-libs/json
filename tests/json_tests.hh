@@ -11,6 +11,19 @@ namespace json::testing {
 		return json::array{std::forward<Items>(items)...};
 	}
 
+	template <typename... Items>
+	static inline json::node mk_array10(Items&&... items) {
+		return mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(
+		    mk_array(mk_array(mk_array(std::forward<Items>(items)...))))))))));
+	}
+
+	template <typename... Items>
+	static inline json::node mk_array100(Items&&... items) {
+		return mk_array10(mk_array10(
+		    mk_array10(mk_array10(mk_array10(mk_array10(mk_array10(mk_array10(
+		        mk_array10(mk_array10(std::forward<Items>(items)...))))))))));
+	}
+
 	node_testcase const github_com_nst_JSONTestSuite[] = {
 		{
 			"i_number_double_huge_neg_exp"sv,
@@ -157,8 +170,8 @@ namespace json::testing {
 		},
 		{
 			"i_structure_500_nested_arrays"sv,
-			u8"[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
-			mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array(mk_array()))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))),
+			u8"[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"sv,
+			mk_array100(mk_array100(mk_array100(mk_array100(mk_array100())))),
 		},
 		// i_structure_UTF-8_BOM_empty_object
 		{
@@ -721,10 +734,12 @@ namespace json::testing {
 			"n_string_with_trailing_garbage"sv,
 			u8"\"\"x"sv,
 		},
+#if !defined(_MSC_VER) && !defined(__clang__)
 		{
 			"n_structure_100000_opening_arrays",
 #include "n_structure_100000_opening_arrays.inc"
 		},
+#endif
 		{
 			"n_structure_angle_bracket_."sv,
 			u8"<.>"sv,
@@ -817,10 +832,12 @@ namespace json::testing {
 			"n_structure_open_array_comma"sv,
 			u8"[,"sv,
 		},
+#if !defined(_MSC_VER) && !defined(__clang__)
 		{
 			"n_structure_open_array_object",
 #include "n_structure_open_array_object.inc"
 		},
+#endif
 		{
 			"n_structure_open_array_open_object"sv,
 			u8"[{"sv,

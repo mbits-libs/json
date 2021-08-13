@@ -119,5 +119,5 @@ void std_capture::append() {
 		break;
 	}
 
-	buffer_.append(buffer, ret);
+	buffer_.append(buffer, static_cast<size_t>(ret));
 }
