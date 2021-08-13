@@ -118,6 +118,6 @@ add_executable(json-test ${TEST_SRCS})
 target_compile_options(json-test PRIVATE ${ADDITIONAL_WALL_FLAGS})
 target_link_libraries(json-test json GTest::gtest_main)
 
-add_test(NAME json COMMAND json-test)
+add_test(NAME json COMMAND json-test --gtest_output=xml:testing-results/json-${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}.xml)
 
 endif()
