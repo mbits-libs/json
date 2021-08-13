@@ -138,7 +138,7 @@ Kind const* cast_from_json(node const* value, json::string_view const& path);
 
 Equivalent of `cast<Kind>(from_json(value, key));`
 
-[Coveralls badge]: https://img.shields.io/coveralls/github/mbits-libs/libmstch-json?style=flat-square
-[Coveralls]: https://coveralls.io/github/mbits-libs/libmstch-json "Coveralls"
+[Coveralls badge]: https://img.shields.io/coveralls/github/mbits-libs/json?style=flat-square
+[Coveralls]: https://coveralls.io/github/mbits-libs/json "Coveralls"
 [20-badge]: https://img.shields.io/badge/C%2B%2B-20-informational?style=flat-square
 [20]: https://en.wikipedia.org/wiki/C%2B%2B20 "Wikipedia C++20"
