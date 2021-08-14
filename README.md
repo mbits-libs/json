@@ -1,5 +1,6 @@
 # JSON parser
 
+[![GitHub Workflow Status][Workflow badge]][Actions]
 [![Coveralls github][Coveralls badge]][Coveralls]
 [![Cpp Standard][20-badge]][20]
 
@@ -138,6 +139,8 @@ Kind const* cast_from_json(node const* value, json::string_view const& path);
 
 Equivalent of `cast<Kind>(from_json(value, key));`
 
+[Workflow badge]: https://img.shields.io/github/workflow/status/mbits-libs/json/C++%20build?style=flat-square
+[Actions]: https://github.com/mbits-libs/json/actions/workflows/build.yaml
 [Coveralls badge]: https://img.shields.io/coveralls/github/mbits-libs/json?style=flat-square
 [Coveralls]: https://coveralls.io/github/mbits-libs/json "Coveralls"
 [20-badge]: https://img.shields.io/badge/C%2B%2B-20-informational?style=flat-square
