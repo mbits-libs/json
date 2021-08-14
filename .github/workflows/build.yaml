@@ -31,6 +31,14 @@ jobs:
             gen_arch: "x64"
             coveralls: false
 
+          - name: "macOS"
+            os: macos-latest
+            build_type: "Release"
+            cc: "clang"
+            cxx: "clang++"
+            generators: "Ninja"
+            coveralls: false
+
     env:
       # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
       BUILD_TYPE: ${{ matrix.config.build_type }}
