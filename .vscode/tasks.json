@@ -8,7 +8,7 @@
 				"rm -rf build && mkdir build && cd build;",
 				"CXX=g++-10 conan install .. --build missing -s build_type=Debug;",
 				"CXX=g++-10 cmake .. -DCMAKE_BUILD_TYPE=Debug ",
-				"-DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DMSTCH_COVERALLS=ON -DMSTCH_COVERALLS_UPLOAD=OFF -G Ninja"
+				"-DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DJSON_COVERALLS=ON -DJSON_COVERALLS_UPLOAD=OFF -G Ninja"
 			],
 			"args": [],
 			"options": {
@@ -24,7 +24,7 @@
 				"rm -rf build && mkdir build && cd build;",
 				"CXX=g++-10 conan install .. --build missing -s build_type=Release;",
 				"CXX=g++-10 cmake .. -DCMAKE_BUILD_TYPE=Release ",
-				"-DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DMSTCH_COVERALLS=ON -DMSTCH_COVERALLS_UPLOAD=OFF -G Ninja"
+				"-DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DJSON_COVERALLS=ON -DJSON_COVERALLS_UPLOAD=OFF -G Ninja"
 			],
 			"args": [],
 			"options": {
@@ -49,7 +49,7 @@
 		{
 			"type": "shell",
 			"label": "Coverage tests",
-			"command": "ninja MSTCH_coveralls",
+			"command": "ninja JSON_coveralls",
 			"args": [],
 			"options": {
 				"cwd": "${workspaceFolder}/build"

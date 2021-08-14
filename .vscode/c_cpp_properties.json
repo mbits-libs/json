@@ -2,8 +2,7 @@
     "env": {
         "linux-conan": "${HOME}/.conan/data",
         "linux-conan-packages": [
-            "${linux-conan}/gtest/1.10.0/_/_/package/3a7805e4bd67f61ce78cbd43faa928aafe32de35/include",
-            "${linux-conan}/gtest/1.10.0/_/_/package/c3115cba91b5b4c23af8f1f2cc6e734c021cc93f/include"
+            "${linux-conan}/gtest/cci.20210126/_/_/package/6f74be7aa0880ac3a032c53631ce97b6e7ac1ed3/include"
         ]
     },
     "configurations": [
@@ -12,15 +11,15 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/external/libmstch/include",
                 "${linux-conan-packages}"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++-10",
             "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "gcc-x64",
-            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4
