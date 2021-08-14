@@ -8,36 +8,29 @@ jobs:
     strategy:
       matrix:
         config:
-          - name: "Ubuntu Release"
+          - name: "Ubuntu"
             os: ubuntu-latest
             build_type: "Release"
-            cc: "gcc-11"
-            cxx: "g++-11"
-            generators: "Ninja"
-            coveralls: false
-
-          - name: "Ubuntu Debug"
-            os: ubuntu-latest
-            build_type: "Debug"
             cc: "gcc-11"
             cxx: "g++-11"
             generators: "Ninja"
             coveralls: true
 
-          - name: "Windows Release"
-            os: windows-latest
-            build_type: "Release"
-            generators: "Visual Studio 16 2019"
-            gen_arch: "x64"
-            coveralls: false
-
-          - name: "Ubuntu Release (Clang)"
+          - name: "Ubuntu (Clang)"
             os: ubuntu-latest
             build_type: "Release"
             cc: "clang-12"
             cxx: "clang++-12"
             generators: "Ninja"
             coveralls: false
+
+          - name: "Windows"
+            os: windows-latest
+            build_type: "Release"
+            generators: "Visual Studio 16 2019"
+            gen_arch: "x64"
+            coveralls: false
+
     env:
       # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
       BUILD_TYPE: ${{ matrix.config.build_type }}
@@ -60,12 +53,12 @@ jobs:
       shell: bash
 
     - name: Get compilers (Clang/Ubuntu)
-      if: ${{ startsWith(matrix.config.os, 'ubuntu-') && matrix.config.cc == 'clang-12' }}
+      if: ${{ startsWith(matrix.config.os, 'ubuntu-') && startsWith(matrix.config.cc, 'clang-') }}
       run: |
          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
          echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main" | sudo tee /etc/apt/sources.list.d/llvm.list
          sudo apt update
-         sudo apt install clang-12 lld-12
+         sudo apt install ${{ env.CC }}
       shell: bash
 
     - name: Add MSBuild to PATH (Windows)
