@@ -64,72 +64,80 @@ namespace json {
 	                             map,
 	                             array>::value;
 
-	template <NodeType Kind>
+#if defined(__APPLE__) && defined(__clang__)
+#define NODE_TYPE_TMPLT      \
+	template <typename Kind> \
+	requires NodeType<Kind>
+#else
+#define NODE_TYPE_TMPLT template <NodeType Kind>
+#endif
+
+	NODE_TYPE_TMPLT
 	static inline Kind* cast(node& value) {
 		if (!std::holds_alternative<Kind>(value)) return nullptr;
 		return &std::get<Kind>(value);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast(node const& value) {
 		if (!std::holds_alternative<Kind>(value)) return nullptr;
 		return &std::get<Kind>(value);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast(map& value, string const& key) {
 		auto it = value.find(key);
 		if (it == value.end()) return nullptr;
 		return cast<Kind>(it->second);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast(map const& value, string const& key) {
 		auto it = value.find(key);
 		if (it == value.end()) return nullptr;
 		return cast<Kind>(it->second);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast(node* value) {
 		if (!value) return nullptr;
 		return cast<Kind>(*value);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast(node const* value) {
 		if (!value) return nullptr;
 		return cast<Kind>(*value);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast(map* value, string const& key) {
 		if (!value) return nullptr;
 		return cast<Kind>(*value, key);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast(map const* value, string const& key) {
 		if (!value) return nullptr;
 		return cast<Kind>(*value, key);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast(node& value, string const& key) {
 		return cast<Kind>(cast<map>(value), key);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast(node const& value, string const& key) {
 		return cast<Kind>(cast<map>(value), key);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast(node* value, string const& key) {
 		return cast<Kind>(cast<map>(value), key);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast(node const* value, string const& key) {
 		return cast<Kind>(cast<map>(value), key);
 	}
@@ -163,36 +171,36 @@ namespace json {
 		return from_json(cast<map>(value), path);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast_from_json(map& value, string_view const& path) {
 		return cast<Kind>(from_json(value, path));
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast_from_json(map const& value,
 	                                         string_view const& path) {
 		return cast<Kind>(from_json(value, path));
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast_from_json(map* value, string const& path) {
 		return cast<Kind>(from_json(value, path));
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast_from_json(map const* value,
 	                                         string_view const& path) {
 		return cast<Kind>(from_json(value, path));
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast_from_json(node& value, string_view const& path) {
 		auto result = from_json(value, path);
 		if (!result) return nullptr;
 		return cast<Kind>(*result);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast_from_json(node const& value,
 	                                         string_view const& path) {
 		auto result = from_json(value, path);
@@ -200,13 +208,13 @@ namespace json {
 		return cast<Kind>(*result);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind* cast_from_json(node* value, string_view const& path) {
 		if (!value) return nullptr;
 		return cast_from_json<Kind>(*value, path);
 	}
 
-	template <NodeType Kind>
+	NODE_TYPE_TMPLT
 	static inline Kind const* cast_from_json(node const* value,
 	                                         string_view const& path) {
 		if (!value) return nullptr;
