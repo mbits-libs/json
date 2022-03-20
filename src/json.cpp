@@ -807,6 +807,7 @@ namespace json {
 
 		struct writer {
 			output& printer;
+			write_config const& config;
 			unsigned indent_size{};
 
 			void write(node const& value) { std::visit(*this, value.base()); }
@@ -841,16 +842,16 @@ namespace json {
 			void operator()(string const& value) const { write_string(value); }
 
 			void operator()(map const& values) const {
-				if (values.empty()) {
+				if (values.empty() && config.inline_single_item) {
 					printer.write(u8"{}"sv);
 					return;
 				}
 				printer.write('{');
-				if (values.size() == 1) {
+				if (values.size() == 1 && config.inline_single_item) {
 					auto const& [key, value] = *values.begin();
 					write_string(key);
-					printer.write(u8": "sv);
-					writer{printer, indent_size}.write(value);
+					printer.write(config.separators.key);
+					writer{printer, config, indent_size}.write(value);
 					printer.write('}');
 					return;
 				}
@@ -859,26 +860,26 @@ namespace json {
 					if (first)
 						first = false;
 					else
-						printer.write(',');
+						printer.write(config.separators.item);
 
 					indent();
-					printer.write(u8"    "sv);
+					deeper();
 					write_string(key);
-					printer.write(u8": "sv);
-					writer{printer, indent_size + 1}.write(value);
+					printer.write(config.separators.key);
+					writer{printer, config, indent_size + 1}.write(value);
 				}
 				indent();
 				printer.write('}');
 			}
 
 			void operator()(array const& values) const {
-				if (values.empty()) {
+				if (values.empty() && config.inline_single_item) {
 					printer.write(u8"[]"sv);
 					return;
 				}
 				printer.write('[');
-				if (values.size() == 1) {
-					writer{printer, indent_size}.write(values.front());
+				if (values.size() == 1 && config.inline_single_item) {
+					writer{printer, config, indent_size}.write(values.front());
 					printer.write(']');
 					return;
 				}
@@ -888,20 +889,34 @@ namespace json {
 					if (first)
 						first = false;
 					else
-						printer.write(',');
+						printer.write(config.separators.item);
 
 					indent();
-					printer.write(u8"    "sv);
-					writer{printer, indent_size + 1}.write(value);
+					deeper();
+					writer{printer, config, indent_size + 1}.write(value);
 				}
 				indent();
 				printer.write(']');
 			}
 
 			void indent() const {
+				if (std::holds_alternative<std::monostate>(config.indent))
+					return;
 				printer.write('\n');
+
+				auto const value = std::get<std::u8string_view>(config.indent);
+				if (value.empty()) return;
 				for (unsigned counter = 0; counter < indent_size; ++counter)
-					printer.write(u8"    "sv);
+					printer.write(value);
+			}
+
+			void deeper() const {
+				if (std::holds_alternative<std::monostate>(config.indent))
+					return;
+
+				auto const value = std::get<std::u8string_view>(config.indent);
+				if (value.empty()) return;
+				printer.write(value);
 			}
 
 			void write_string(string const& s) const {
@@ -967,7 +982,7 @@ namespace json {
 			file_output(FILE* file) : file_{file} {};
 
 			void write(string_view str) override {
-				std::fwrite(str.data(), 1, str.size(), file_);
+				if (!str.empty()) std::fwrite(str.data(), 1, str.size(), file_);
 			}
 			void write(byte_type c) override { std::fputc(c, file_); }
 
@@ -1028,18 +1043,41 @@ namespace json {
 
 	output::~output() = default;
 
-	void write_json(output& printer, node const& value) {
-		writer{printer}.write(value);
+	void write_json(output& printer,
+	                node const& value,
+	                write_config const& config) {
+		write_config cfg{config};
+		std::u8string indent{};
+		{
+			static constexpr auto missing_key = u8": "sv;
+			static constexpr auto missing_empty_item = u8", "sv;
+			static constexpr auto missing_non_empty_item = u8","sv;
+			if (cfg.separators.key.empty()) cfg.separators.key = missing_key;
+			if (cfg.separators.item.empty()) {
+				if (std::holds_alternative<std::monostate>(cfg.indent))
+					cfg.separators.item = missing_empty_item;
+				else
+					cfg.separators.item = missing_non_empty_item;
+			}
+			if (std::holds_alternative<int>(cfg.indent)) {
+				auto const indent_value = std::get<int>(cfg.indent);
+				if (indent_value > 0) indent = std::u8string(indent_value, ' ');
+				cfg.indent = indent;
+			}
+		}
+		writer{.printer = printer, .config = cfg}.write(value);
 	}
 
-	void write_json(FILE* file, node const& value) {
+	void write_json(FILE* file, node const& value, write_config const& config) {
 		file_output printer{file};
-		write_json(printer, value);
+		write_json(printer, value, config);
 	}
 
-	void write_json(string& output, node const& value) {
+	void write_json(string& output,
+	                node const& value,
+	                write_config const& config) {
 		output.clear();
 		string_output printer{output};
-		write_json(printer, value);
+		write_json(printer, value, config);
 	}
 }  // namespace json

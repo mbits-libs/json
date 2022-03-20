@@ -10,6 +10,18 @@
 #include <variant>
 #include <vector>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4455)  // literal suffix identifiers that do not start
+                                 // with an underscore are reserved
+#endif
+
+using std::literals::operator""sv;
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 namespace json {
 	using string = std::u8string;
 	using string_view = std::u8string_view;
@@ -233,7 +245,46 @@ namespace json {
 		virtual void write(byte_type) = 0;
 	};
 
-	void write_json(output&, node const&);
-	void write_json(FILE*, node const&);
-	void write_json(string&, node const&);
+	struct write_config {
+		std::variant<std::monostate, int, std::u8string_view> indent{};
+		struct separators_type {
+			std::u8string_view item{};
+			std::u8string_view key{};
+		} separators{};
+		bool inline_single_item{};
+	};
+
+	inline constexpr write_config concise{
+	    .indent{},
+	    .separators{.item = u8","sv, .key = u8":"sv},
+	    .inline_single_item{},
+	};
+
+	inline constexpr write_config tab{
+	    .indent{u8"\t"sv},
+	    .separators{.item = u8","sv, .key = u8": "sv},
+	    .inline_single_item{true},
+	};
+
+	inline constexpr write_config two_spaces{
+	    .indent{2},
+	    .separators{.item = u8","sv, .key = u8": "sv},
+	    .inline_single_item{true},
+	};
+
+	inline constexpr write_config four_spaces{
+	    .indent{4},
+	    .separators{.item = u8","sv, .key = u8": "sv},
+	    .inline_single_item{true},
+	};
+
+	void write_json(output&,
+	                node const&,
+	                write_config const& config = two_spaces);
+	void write_json(FILE*,
+	                node const&,
+	                write_config const& config = two_spaces);
+	void write_json(string&,
+	                node const&,
+	                write_config const& config = two_spaces);
 }  // namespace json
