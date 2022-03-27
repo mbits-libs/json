@@ -1,10 +1,11 @@
 cmake_minimum_required (VERSION 3.10)
 project (json
-  VERSION 0.1.0
+  VERSION 0.1.1
   DESCRIPTION "JSON implemented in terms of C++17 variant."
   LANGUAGES CXX)
 
 set(JSON_TESTING ON CACHE BOOL "Compile and/or run self-tests")
+set(JSON_INSTALL ON CACHE BOOL "Install the library")
 
 set(PROJECT_VERSION_SHORT "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(PROJECT_VERSION_STABILITY "")
@@ -100,6 +101,15 @@ if (MSVC)
 endif()
 
 ##################################################################
+##  INSTALL
+##################################################################
+
+if (JSON_INSTALL)
+  install(TARGETS json)
+  install(DIRECTORY include/json DESTINATION include)
+endif()
+
+##################################################################
 ##  TESTING
 ##################################################################
 
@@ -117,7 +127,7 @@ file(GLOB TEST_SRCS tests/*.cc)
 
 add_executable(json-test ${TEST_SRCS})
 target_compile_options(json-test PRIVATE ${ADDITIONAL_WALL_FLAGS})
-target_link_libraries(json-test json GTest::gtest_main)
+target_link_libraries(json-test PRIVATE json GTest::gtest_main)
 
 add_test(NAME json COMMAND json-test --gtest_output=xml:testing-results/json-${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}.xml)
 
