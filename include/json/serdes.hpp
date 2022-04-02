@@ -268,4 +268,4 @@ namespace json {
 #define LOAD(value) LOAD_EX(::json::load(data, NAMED(value)))
 #define LOAD_OR_VALUE(value) LOAD_EX(::json::load_or_value(data, NAMED(value)))
 #define LOAD_MULTI(value, ...) \
-	LOAD_EX(::json::load_multi<__VA_ARGS__>(data, NAMED(value)))
+	LOAD_EX((::json::load_multi<__VA_ARGS__>(data, NAMED(value))))

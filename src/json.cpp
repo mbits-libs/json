@@ -1061,7 +1061,9 @@ namespace json {
 			}
 			if (std::holds_alternative<int>(cfg.indent)) {
 				auto const indent_value = std::get<int>(cfg.indent);
-				if (indent_value > 0) indent = std::u8string(indent_value, ' ');
+				if (indent_value > 0)
+					indent =
+					    std::u8string(static_cast<unsigned>(indent_value), ' ');
 				cfg.indent = indent;
 			}
 		}
