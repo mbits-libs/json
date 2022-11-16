@@ -5,6 +5,8 @@
 #include <optional>
 #include <json/json.hpp>
 
+using namespace std::literals;
+
 namespace json {
 	enum class conv_result { ok, opt, failed, updated };
 	inline constexpr bool is_ok(conv_result res) noexcept {
@@ -17,68 +19,92 @@ namespace json {
 	};
 
 	template <typename T>
-	concept LoadsJsonRaw = requires(T& lval, node const& data) {
-		{ lval.from_json(data) } -> std::convertible_to<conv_result>;
+	concept LoadsJsonRaw = requires(T& lval,
+	                                node const& data,
+	                                std::string& dbg) {
+		{ lval.from_json(data, dbg) } -> std::convertible_to<conv_result>;
 	};
 
 	template <typename T>
-	concept LoadsJson = requires(T& lval, map const& data) {
-		{ lval.from_json(data) } -> std::convertible_to<conv_result>;
+	concept LoadsJson = requires(T& lval, map const& data, std::string& dbg) {
+		{ lval.from_json(data, dbg) } -> std::convertible_to<conv_result>;
 		requires !LoadsJsonRaw<T>;
 	};
 
 	template <typename T, typename... Kind>
-	concept LoadsJsonEx = requires(T& lval, Kind const*... data) {
+	concept LoadsJsonEx = requires(T& lval,
+	                               Kind const*... data,
+	                               std::string& dbg) {
 		(NodeType<Kind> && ...);
-		{ lval.from_json(data...) } -> std::convertible_to<conv_result>;
+		{ lval.from_json(data..., dbg) } -> std::convertible_to<conv_result>;
 	};
 
-	inline auto to_json(StoresJson auto const& obj) { return obj.to_json(); }
+	inline auto to_json(StoresJson auto const& obj) {
+		return obj.to_json();
+	}
 	inline long long to_json(std::integral auto val) {
 		return static_cast<long long>(val);
 	}
 	inline long long to_json(std::chrono::sys_seconds const& val) {
 		return static_cast<long long>(val.time_since_epoch().count());
 	}
-	inline string const& to_json(string const& val) { return val; }
-
-	inline conv_result load(node const& src, LoadsJson auto& obj) {
-		auto const data = cast<map>(src);
-		if (!data) return conv_result::opt;
-		return obj.from_json(*data);
+	inline string const& to_json(string const& val) {
+		return val;
 	}
 
-	inline conv_result load(node const& src, LoadsJsonRaw auto& obj) {
-		return obj.from_json(src);
+	inline conv_result load(node const& src,
+	                        LoadsJson auto& obj,
+	                        std::string& dbg) {
+		auto const data = cast<map>(src);
+		if (!data) return conv_result::opt;
+		return obj.from_json(*data, dbg);
+	}
+
+	inline conv_result load(node const& src,
+	                        LoadsJsonRaw auto& obj,
+	                        std::string& dbg) {
+		return obj.from_json(src, dbg);
 	}
 
 	template <NodeType... Kind>
 	inline conv_result load_multi(node const& src,
-	                              LoadsJsonEx<Kind...> auto& obj) {
-		return obj.from_json(cast<Kind>(src)...);
+	                              LoadsJsonEx<Kind...> auto& obj,
+	                              std::string& dbg) {
+		return obj.from_json(cast<Kind>(src)..., dbg);
 	}
 
 	template <std::integral Int>
-	inline conv_result load(node const& src, Int& val) {
+	inline conv_result load(node const& src, Int& val, std::string& dbg) {
 		auto const data = cast<long long>(src);
 		if (!data) return conv_result::opt;
-		if (!*data) return conv_result::updated;
+		if (!*data) {
+			dbg.append("\n- Loading a zero numeric value"sv);
+			return conv_result::updated;
+		}
 		val = static_cast<Int>(*data);
 		return conv_result::ok;
 	}
 
-	inline conv_result load(node const& src, std::chrono::sys_seconds& val) {
+	inline conv_result load(node const& src,
+	                        std::chrono::sys_seconds& val,
+	                        std::string& dbg) {
 		auto const data = cast<long long>(src);
 		if (!data) return conv_result::opt;
-		if (!*data) return conv_result::updated;
+		if (!*data) {
+			dbg.append("\n- Loading a zero time value"sv);
+			return conv_result::updated;
+		}
 		val = std::chrono::sys_seconds{std::chrono::seconds{*data}};
 		return conv_result::ok;
 	}
 
-	inline conv_result load(node const& src, string& val) {
+	inline conv_result load(node const& src, string& val, std::string& dbg) {
 		auto const data = cast<string>(src);
 		if (!data) return conv_result::opt;
-		if (data->empty()) return conv_result::updated;
+		if (data->empty()) {
+			dbg.append("\n- Loading an empty string value"sv);
+			return conv_result::updated;
+		}
 		val = *data;
 		return conv_result::ok;
 	}
@@ -88,43 +114,64 @@ namespace json {
 	    LoadsJson<T> || LoadsJsonRaw<T> || std::integral<T> ||
 	    std::same_as<T, std::chrono::sys_seconds> || std::same_as<T, string>;
 
+	inline void append_name(conv_result res,
+	                        string const& key,
+	                        std::string& dbg) {
+		if (res != conv_result::updated) return;
+		dbg.append(" ("sv);
+		dbg.append(reinterpret_cast<char const*>(key.data()), key.size());
+		dbg.push_back(')');
+	}
+
 	template <LoadableJsonValue Payload>
 	inline conv_result load(map const& src,
 	                        string const& key,
-	                        std::optional<Payload>& value) {
+	                        std::optional<Payload>& value,
+	                        std::string& dbg) {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
 		value = Payload{};
-		auto res = load(it->second, *value);
+		auto res = load(it->second, *value, dbg);
 		if (res == conv_result::failed || res == conv_result::opt) {
 			value = std::nullopt;
 		}
+		append_name(res, key, dbg);
 		return res;
 	}
 
 	inline conv_result load(map const& src,
 	                        string const& key,
-	                        LoadableJsonValue auto& value) {
+	                        LoadableJsonValue auto& value,
+	                        std::string& dbg) {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
-		return load(it->second, value);
+		auto res = load(it->second, value, dbg);
+		append_name(res, key, dbg);
+		return res;
 	}
 
 	template <NodeType... Kind, LoadsJsonEx<Kind...> T>
-	inline conv_result load_multi(map const& src, string const& key, T& value) {
+	inline conv_result load_multi(map const& src,
+	                              string const& key,
+	                              T& value,
+	                              std::string& dbg) {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
-		return load_multi<Kind...>(it->second, value);
+		auto res = load_multi<Kind...>(it->second, value, dbg);
+		append_name(res, key, dbg);
+		return res;
 	}
 
 	template <LoadableJsonValue ValueType>
-	inline conv_result load(array const& src, std::vector<ValueType>& value) {
+	inline conv_result load(array const& src,
+	                        std::vector<ValueType>& value,
+	                        std::string& dbg) {
 		auto result = conv_result::ok;
 		value.clear();
 		value.reserve(src.size());
 		for (auto& node_item : src) {
 			value.push_back({});
-			auto const res = load(node_item, value.back());
+			auto const res = load(node_item, value.back(), dbg);
 			if (res == conv_result::failed || res == conv_result::opt)
 				value.pop_back();
 			if (!is_ok(res)) result = res;
@@ -136,27 +183,32 @@ namespace json {
 	template <LoadableJsonValue ValueType>
 	inline conv_result load(map const& src,
 	                        string const& key,
-	                        std::vector<ValueType>& value) {
+	                        std::vector<ValueType>& value,
+	                        std::string& dbg) {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
 		auto const arr = cast<array>(it->second);
 		if (!arr) return conv_result::opt;
-		return load(*arr, value);
+		auto res = load(*arr, value, dbg);
+		append_name(res, key, dbg);
+		return res;
 	}
 
 	template <LoadableJsonValue ValueType>
 	inline conv_result load_or_value(map const& src,
 	                                 string const& key,
-	                                 std::vector<ValueType>& value) {
+	                                 std::vector<ValueType>& value,
+	                                 std::string& dbg) {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
 		auto const arr = cast<array>(it->second);
-		if (arr) return load(*arr, value);
+		if (arr) return load(*arr, value, dbg);
 		value.push_back({});
-		auto const res = load(it->second, value.back());
+		auto const res = load(it->second, value.back(), dbg);
 		if (res == conv_result::failed || res == conv_result::opt)
 			value.pop_back();
-		if (res != conv_result::opt) res;
+		append_name(res, key, dbg);
+		if (res != conv_result::opt) return res;
 		return conv_result::ok;
 	}
 
@@ -265,7 +317,8 @@ namespace json {
 		if (!is_ok(ret)) result = ret;                            \
 		if (result == ::json::conv_result::failed) return result; \
 	} while (0)
-#define LOAD(value) LOAD_EX(::json::load(data, NAMED(value)))
-#define LOAD_OR_VALUE(value) LOAD_EX(::json::load_or_value(data, NAMED(value)))
+#define LOAD(value) LOAD_EX(::json::load(data, NAMED(value), dbg))
+#define LOAD_OR_VALUE(value) \
+	LOAD_EX(::json::load_or_value(data, NAMED(value), dbg))
 #define LOAD_MULTI(value, ...) \
-	LOAD_EX((::json::load_multi<__VA_ARGS__>(data, NAMED(value))))
+	LOAD_EX((::json::load_multi<__VA_ARGS__>(data, NAMED(value), dbg)))
