@@ -86,6 +86,14 @@ namespace json {
 	}
 
 	inline conv_result load(node const& src,
+	                        bool& val,
+	                        std::string& dbg) {
+		auto const data = cast<bool>(src);
+		val = data ? *data : false;
+		return conv_result::ok;
+	}
+
+	inline conv_result load(node const& src,
 	                        std::chrono::sys_seconds& val,
 	                        std::string& dbg) {
 		auto const data = cast<long long>(src);
