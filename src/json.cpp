@@ -13,7 +13,9 @@ using namespace std::literals;
 
 namespace json {
 	namespace {
-		string as_str(string_view view) { return {view.data(), view.size()}; }
+		string as_str(string_view view) {
+			return {view.data(), view.size()};
+		}
 
 		std::vector<string> split_s(string_view::value_type sep,
 		                            string_view data) {
@@ -805,10 +807,88 @@ namespace json {
 				target.push_back(static_cast<string::value_type>(*midp++));
 		}
 
+		struct size_judge {
+			size_t allowed_space{80};
+
+			template <typename T>
+			bool operator()(T const&) noexcept {
+				return false;
+			}
+
+			bool consume(size_t length) noexcept {
+				if (length > allowed_space) {
+					allowed_space = 0;
+					return false;
+				}
+				allowed_space -= length;
+				return true;
+			}
+
+			bool operator()(node const& v) noexcept {
+				return std::visit(*this, v.base());
+			}
+
+			bool operator()(std::nullptr_t) noexcept { return consume(4); }
+
+			bool operator()(bool value) noexcept {
+				return consume(value ? 4 : 5);
+			}
+
+			bool operator()(long long value) noexcept {
+				char buffer[200];
+				auto length = snprintf(buffer, sizeof(buffer), "%lld", value);
+				return consume(length);
+			}
+
+			bool operator()(double value) noexcept {
+				char buffer[200];
+				auto length = snprintf(buffer, sizeof(buffer), "%g", value);
+				return consume(length);
+			}
+
+			bool operator()(string const& value) noexcept {
+				// quick and dirty...
+				return consume(value.length() + 2);
+			}
+
+			bool operator()(map const& values) noexcept {
+				if (!consume(2)) return false;
+				bool first = true;
+				for (auto const& [key, value] : values) {
+					if (first) {
+						first = false;
+					} else {
+						if (!consume(2)) return false;
+					}
+
+					if (!(*this)(key)) return false;
+					if (!consume(2)) return false;
+					if (!(*this)(value)) return false;
+				}
+				return true;
+			}
+
+			bool operator()(array const& values) noexcept {
+				if (!consume(2)) return false;
+				bool first = true;
+				for (auto const& value : values) {
+					if (first) {
+						first = false;
+					} else {
+						if (!consume(2)) return false;
+					}
+
+					if (!(*this)(value)) return false;
+				}
+				return true;
+			}
+		};
+
 		struct writer {
 			output& printer;
 			write_config const& config;
 			unsigned indent_size{};
+			bool force_one_line{false};
 
 			void write(node const& value) { std::visit(*this, value.base()); }
 
@@ -842,6 +922,23 @@ namespace json {
 			void operator()(string const& value) const { write_string(value); }
 
 			void operator()(map const& values) const {
+				if (force_one_line || size_judge{}(values)) {
+					printer.write('{');
+					bool first = true;
+					for (auto const& [key, value] : values) {
+						if (first)
+							first = false;
+						else
+							printer.write(config.separators.alt_item);
+
+						write_string(key);
+						printer.write(config.separators.key);
+						writer{printer, config, indent_size, true}.write(value);
+					}
+					printer.write('}');
+					return;
+				}
+
 				if (values.empty() && config.inline_single_item) {
 					printer.write(u8"{}"sv);
 					return;
@@ -873,15 +970,55 @@ namespace json {
 			}
 
 			void operator()(array const& values) const {
+				if (force_one_line || size_judge{}(values)) {
+					printer.write('[');
+					bool first = true;
+					for (auto const& value : values) {
+						if (first)
+							first = false;
+						else
+							printer.write(config.separators.alt_item);
+						writer{printer, config, indent_size, true}.write(value);
+					}
+					printer.write(']');
+					return;
+				}
+
 				if (values.empty() && config.inline_single_item) {
 					printer.write(u8"[]"sv);
 					return;
 				}
+
 				printer.write('[');
 				if (values.size() == 1 && config.inline_single_item) {
 					writer{printer, config, indent_size}.write(values.front());
 					printer.write(']');
 					return;
+				}
+
+				if (config.inline_single_item) {
+					bool valid = true;
+					for (auto const& item : values) {
+						if (std::holds_alternative<string>(item) ||
+						    std::holds_alternative<map>(item) ||
+						    std::holds_alternative<array>(item)) {
+							valid = false;
+							break;
+						}
+					}
+
+					if (valid) {
+						bool first = true;
+						for (auto const& value : values) {
+							if (first)
+								first = false;
+							else
+								printer.write(config.separators.alt_item);
+							writer{printer, config, indent_size}.write(value);
+						}
+						printer.write(']');
+						return;
+					}
 				}
 
 				bool first = true;

@@ -250,6 +250,7 @@ namespace json {
 		struct separators_type {
 			std::u8string_view item{};
 			std::u8string_view key{};
+			std::u8string_view alt_item{item};
 		} separators{};
 		bool inline_single_item{};
 	};
@@ -262,19 +263,19 @@ namespace json {
 
 	inline constexpr write_config tab{
 	    .indent{u8"\t"sv},
-	    .separators{.item = u8","sv, .key = u8": "sv},
+	    .separators{.item = u8","sv, .key = u8": "sv, .alt_item = u8", "sv},
 	    .inline_single_item{true},
 	};
 
 	inline constexpr write_config two_spaces{
 	    .indent{2},
-	    .separators{.item = u8","sv, .key = u8": "sv},
+	    .separators{.item = u8","sv, .key = u8": "sv, .alt_item = u8", "sv},
 	    .inline_single_item{true},
 	};
 
 	inline constexpr write_config four_spaces{
 	    .indent{4},
-	    .separators{.item = u8","sv, .key = u8": "sv},
+	    .separators{.item = u8","sv, .key = u8": "sv, .alt_item = u8", "sv},
 	    .inline_single_item{true},
 	};
 
