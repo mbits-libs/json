@@ -13,9 +13,7 @@ using namespace std::literals;
 
 namespace json {
 	namespace {
-		string as_str(string_view view) {
-			return {view.data(), view.size()};
-		}
+		string as_str(string_view view) { return {view.data(), view.size()}; }
 
 		std::vector<string> split_s(string_view::value_type sep,
 		                            string_view data) {
@@ -837,13 +835,13 @@ namespace json {
 			bool operator()(long long value) noexcept {
 				char buffer[200];
 				auto length = snprintf(buffer, sizeof(buffer), "%lld", value);
-				return consume(length);
+				return consume(static_cast<size_t>(length));
 			}
 
 			bool operator()(double value) noexcept {
 				char buffer[200];
 				auto length = snprintf(buffer, sizeof(buffer), "%g", value);
-				return consume(length);
+				return consume(static_cast<size_t>(length));
 			}
 
 			bool operator()(string const& value) noexcept {

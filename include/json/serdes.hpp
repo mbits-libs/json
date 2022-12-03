@@ -39,18 +39,14 @@ namespace json {
 		{ lval.from_json(data..., dbg) } -> std::convertible_to<conv_result>;
 	};
 
-	inline auto to_json(StoresJson auto const& obj) {
-		return obj.to_json();
-	}
+	inline auto to_json(StoresJson auto const& obj) { return obj.to_json(); }
 	inline long long to_json(std::integral auto val) {
 		return static_cast<long long>(val);
 	}
 	inline long long to_json(std::chrono::sys_seconds const& val) {
 		return static_cast<long long>(val.time_since_epoch().count());
 	}
-	inline string const& to_json(string const& val) {
-		return val;
-	}
+	inline string const& to_json(string const& val) { return val; }
 
 	inline conv_result load(node const& src,
 	                        LoadsJson auto& obj,
@@ -85,9 +81,7 @@ namespace json {
 		return conv_result::ok;
 	}
 
-	inline conv_result load(node const& src,
-	                        bool& val,
-	                        std::string& dbg) {
+	inline conv_result load(node const& src, bool& val, std::string&) {
 		auto const data = cast<bool>(src);
 		val = data ? *data : false;
 		return conv_result::ok;
