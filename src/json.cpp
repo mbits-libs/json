@@ -134,7 +134,8 @@ namespace json {
 			    : result{std::move(result)}, result_mode{result_mode} {}
 		};
 
-		struct reader_state {
+		struct
+		    reader_state {  // NOLINT(cppcoreguidelines-special-member-functions)
 			virtual ~reader_state() = default;
 			virtual reader_result read(iterator& it,
 			                           iterator const& end,
@@ -190,7 +191,9 @@ namespace json {
 			*/
 			enum while_stage { before_loop, in_loop, has_value };
 
-			while_stage stage{before_loop};
+			while_stage
+			    stage  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
+			    {before_loop};
 		};
 
 		class value_reader final : public reader_state {
@@ -269,6 +272,7 @@ namespace json {
 					case has_value:
 						if (!val.index()) return {};
 						result.push_back(std::move(val));
+						val = {};
 						skip_ws(it, end, mode);
 						if (it == end) return {};
 						if (*it != ',') {
@@ -324,9 +328,11 @@ namespace json {
 							if (innerIt != result.end() &&
 							    innerIt->first == current_key_) {
 								innerIt->second = std::move(val);
+								val = {};
 							} else {
 								result.insert(innerIt, {std::move(current_key_),
 								                        std::move(val)});
+								val = {};
 							}
 						}
 						skip_ws(it, end, mode);
@@ -383,6 +389,10 @@ namespace json {
 			return string{start, it};
 		}
 
+		constinit auto const INV_HEX = 16U;
+		constinit auto const INV_HEX_SQUARE = 256U;
+		constinit auto const CHAR_SPACE = 0x20;
+
 		unsigned hex_digit(string::value_type c) {
 			switch (c) {
 				case '0':
@@ -402,22 +412,22 @@ namespace json {
 				case 'D':
 				case 'E':
 				case 'F':
-					return static_cast<unsigned>(c - 'A' + 10);
+					return static_cast<unsigned>(c - 'A' + 10);  // NOLINT
 				case 'a':
 				case 'b':
 				case 'c':
 				case 'd':
 				case 'e':
 				case 'f':
-					return static_cast<unsigned>(c - 'a' + 10);
+					return static_cast<unsigned>(c - 'a' + 10);  // NOLINT
 			}
-			return 16;
+			return INV_HEX;
 		}
 
 		unsigned hex_digit(iterator& it, iterator const& end) {
-			if (it == end) return 16;
+			if (it == end) return INV_HEX;
 			auto const val = hex_digit(*it);
-			if (val < 16) ++it;
+			if (val < INV_HEX) ++it;
 			return val;
 		}
 
@@ -427,11 +437,11 @@ namespace json {
 
 			++it;
 			auto const result = hex_digit(it, end);
-			if (result == 16) return 256;
+			if (result == INV_HEX) return INV_HEX_SQUARE;
 
 			auto const lower = hex_digit(it, end);
-			if (lower == 16) return 256;
-			return result * 16 + lower;
+			if (lower == INV_HEX) return INV_HEX_SQUARE;
+			return result * 16 + lower;  // NOLINT(readability-magic-numbers)
 		}
 
 		uint32_t unicode_escape(iterator& it, iterator const& end) {
@@ -446,9 +456,9 @@ namespace json {
 				uint32_t val = 0;
 				while (it != end && *it != '}') {
 					auto const dig = hex_digit(it, end);
-					if (dig == 16) return max;
+					if (dig == INV_HEX) return max;
 					auto const overflow_guard = val;
-					val *= 16;
+					val *= 16;  // NOLINT(readability-magic-numbers)
 					val += dig;
 					if (overflow_guard > val) return max;
 				}
@@ -459,8 +469,8 @@ namespace json {
 			uint32_t val = 0;
 			for (int i = 0; i < 4; ++i) {
 				auto const dig = hex_digit(it, end);
-				if (dig == 16) return max;
-				val *= 16;
+				if (dig == INV_HEX) return max;
+				val *= 16;  // NOLINT(readability-magic-numbers)
 				val += dig;
 			}
 			return val;
@@ -516,7 +526,8 @@ namespace json {
 						case 'x': {
 							if (mode == read_mode::strict) return {};
 							auto const val = hex_escape(it, end);
-							if (val > 255) return {};
+							if (val > 255)  // NOLINT(readability-magic-numbers)
+								return {};
 							result.push_back(static_cast<string::value_type>(
 							    static_cast<uchar>(val)));
 							--it;
@@ -557,7 +568,7 @@ namespace json {
 						break;
 					default:
 						if (mode == read_mode::strict &&
-						    static_cast<unsigned char>(*it) < 0x20)
+						    static_cast<unsigned char>(*it) < CHAR_SPACE)
 							return {};
 						result.push_back(*it);
 				}
@@ -602,7 +613,7 @@ namespace json {
 			bool read = false;
 			while (it != end) {
 				auto const digit = hex_digit(*it);
-				if (digit > 9) {
+				if (digit > 9) {  // NOLINT(readability-magic-numbers)
 					if (!read && strict_mode) return std::nullopt;
 					break;
 				}
@@ -610,7 +621,7 @@ namespace json {
 				++it;
 				++power;
 				auto const overflow_guard = value;
-				value *= 10;
+				value *= 10;  // NOLINT(readability-magic-numbers)
 				value += digit;
 				if (overflow_guard > value) return std::nullopt;
 			}
@@ -636,11 +647,11 @@ namespace json {
 			if (it == end) return {};
 			if (*it == '0') {
 				++it;
-				if (it == end) return 0ll;
+				if (it == end) return 0LL;
 				if (mode == read_mode::strict) {
 					switch (*it) {
 						default:
-							return 0ll;
+							return 0LL;
 						case '.':
 						case 'e':
 						case 'E':
@@ -651,14 +662,14 @@ namespace json {
 					switch (*it) {
 						case 'b':
 							++it;
-							return read_int(it, end, 2, neg);
+							return read_int(it, end, 2, neg);  // NOLINT
 						case 'o':
 							++it;
-							return read_int(it, end, 8, neg);
+							return read_int(it, end, 8, neg);  // NOLINT
 						case 'x':
 						case 'X':
 							++it;
-							return read_int(it, end, 16, neg);
+							return read_int(it, end, 16, neg);  // NOLINT
 						case '0':
 						case '1':
 						case '2':
@@ -667,9 +678,9 @@ namespace json {
 						case '5':
 						case '6':
 						case '7':
-							return read_int(it, end, 8, neg);
+							return read_int(it, end, 8, neg);  // NOLINT
 						default:
-							return 0ll;
+							return 0LL;
 						case '.':
 						case 'e':
 						case 'E':
@@ -745,8 +756,8 @@ namespace json {
 			return {};
 		}
 
-		static constexpr const uchar firstByteMark[7] = {0x00, 0x00, 0xC0, 0xE0,
-		                                                 0xF0, 0xF8, 0xFC};
+		constexpr uchar firstByteMark[7] = {0x00, 0x00, 0xC0, 0xE0,
+		                                    0xF0, 0xF8, 0xFC};
 
 		enum : uint32_t {
 			UNI_SUR_HIGH_START = 0xD800,
@@ -759,43 +770,44 @@ namespace json {
 			UNI_MAX_LEGAL_UTF32 = 0x0010FFFF
 		};
 
-		static constexpr const uint32_t byteMask = 0xBF;
-		static constexpr const uint32_t byteMark = 0x80;
+		constexpr uint32_t byteMask = 0xBF;
+		constexpr uint32_t byteMark = 0x80;
 
 		void encode(uint32_t ch, string& target) {
 			unsigned short bytesToWrite = 0;
 
 			/* Figure out how many bytes the result will require */
-			if (ch < 0x80u)
+			if (ch < 0x80u)  // NOLINT
 				bytesToWrite = 1;
-			else if (ch < 0x800u)
-				bytesToWrite = 2;
-			else if (ch >= UNI_SUR_HIGH_START && ch <= UNI_SUR_LOW_END) {
-				bytesToWrite = 3;
+			else if (ch < 0x800u)  // NOLINT
+				bytesToWrite = 2;  // NOLINT
+			else if (ch >= UNI_SUR_HIGH_START &&
+			         ch <= UNI_SUR_LOW_END) {  // NOLINT
+				bytesToWrite = 3;              // NOLINT
 				ch = UNI_REPLACEMENT_CHAR;
-			} else if (ch < 0x10000u)
-				bytesToWrite = 3;
+			} else if (ch < 0x10000u)  // NOLINT
+				bytesToWrite = 3;      // NOLINT
 			else if (ch <= UNI_MAX_LEGAL_UTF32)
-				bytesToWrite = 4;
+				bytesToWrite = 4;  // NOLINT
 			else {
-				bytesToWrite = 3;
+				bytesToWrite = 3;  // NOLINT
 				ch = UNI_REPLACEMENT_CHAR;
 			}
 
 			uchar mid[4];
 			uchar* midp = mid + sizeof(mid);
 			switch (bytesToWrite) { /* note: everything falls through. */
-				case 4:
+				case 4:             // NOLINT
 					*--midp = static_cast<uchar>((ch | byteMark) & byteMask);
-					ch >>= 6;
+					ch >>= 6;  // NOLINT
 					[[fallthrough]];
 				case 3:
 					*--midp = static_cast<uchar>((ch | byteMark) & byteMask);
-					ch >>= 6;
+					ch >>= 6;  // NOLINT
 					[[fallthrough]];
 				case 2:
 					*--midp = static_cast<uchar>((ch | byteMark) & byteMask);
-					ch >>= 6;
+					ch >>= 6;  // NOLINT
 					[[fallthrough]];
 				case 1:
 					*--midp =
@@ -806,7 +818,7 @@ namespace json {
 		}
 
 		struct size_judge {
-			size_t allowed_space{80};
+			size_t allowed_space{80};  // NOLINT
 
 			template <typename T>
 			bool operator()(T const&) noexcept {
@@ -823,23 +835,27 @@ namespace json {
 			}
 
 			bool operator()(node const& v) noexcept {
-				return std::visit(*this, v.base());
+				try {
+					return std::visit(*this, v.base());
+				} catch (...) {
+					return false;
+				}
 			}
 
 			bool operator()(std::nullptr_t) noexcept { return consume(4); }
 
 			bool operator()(bool value) noexcept {
-				return consume(value ? 4 : 5);
+				return consume(value ? 4 : 5);  // NOLINT
 			}
 
 			bool operator()(long long value) noexcept {
-				char buffer[200];
+				char buffer[200];  // NOLINT
 				auto length = snprintf(buffer, sizeof(buffer), "%lld", value);
 				return consume(static_cast<size_t>(length));
 			}
 
 			bool operator()(double value) noexcept {
-				char buffer[200];
+				char buffer[200];  // NOLINT
 				auto length = snprintf(buffer, sizeof(buffer), "%g", value);
 				return consume(static_cast<size_t>(length));
 			}
@@ -902,7 +918,7 @@ namespace json {
 			}
 
 			void operator()(long long value) const {
-				char buffer[200];
+				char buffer[200];  // NOLINT
 				auto length = snprintf(buffer, sizeof(buffer), "%lld", value);
 				printer.write(
 				    {reinterpret_cast<string::value_type const*>(buffer),
@@ -910,7 +926,7 @@ namespace json {
 			}
 
 			void operator()(double value) const {
-				char buffer[200];
+				char buffer[200];  // NOLINT
 				auto length = snprintf(buffer, sizeof(buffer), "%g", value);
 				printer.write(
 				    {reinterpret_cast<string::value_type const*>(buffer),
@@ -1091,7 +1107,7 @@ namespace json {
 			}
 
 			void write_control(string::value_type c) const {
-				char buff[10];
+				char buff[10];  // NOLINT
 #ifdef _MSC_VER
 #pragma warning(push)
 // 'sprintf': This function or variable may be unsafe. Consider using sprintf_s
