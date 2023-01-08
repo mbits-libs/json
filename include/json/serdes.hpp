@@ -81,6 +81,14 @@ namespace json {
 		return conv_result::ok;
 	}
 
+	template <std::integral Int>
+	inline conv_result load_zero(node const& src, Int& val, std::string& dbg) {
+		auto const data = cast<long long>(src);
+		if (!data) return conv_result::opt;
+		val = static_cast<Int>(*data);
+		return conv_result::ok;
+	}
+
 	inline conv_result load(node const& src, bool& val, std::string&) {
 		auto const data = cast<bool>(src);
 		val = data ? *data : false;
@@ -96,6 +104,15 @@ namespace json {
 			dbg.append("\n- Loading a zero time value"sv);
 			return conv_result::updated;
 		}
+		val = std::chrono::sys_seconds{std::chrono::seconds{*data}};
+		return conv_result::ok;
+	}
+
+	inline conv_result load_zero(node const& src,
+	                             std::chrono::sys_seconds& val,
+	                             std::string& dbg) {
+		auto const data = cast<long long>(src);
+		if (!data) return conv_result::opt;
 		val = std::chrono::sys_seconds{std::chrono::seconds{*data}};
 		return conv_result::ok;
 	}
@@ -141,6 +158,22 @@ namespace json {
 		return res;
 	}
 
+	template <LoadableJsonValue Payload>
+	inline conv_result load_zero(map const& src,
+	                             string const& key,
+	                             std::optional<Payload>& value,
+	                             std::string& dbg) {
+		auto it = src.find(key);
+		if (it == src.end()) return conv_result::opt;
+		value = Payload{};
+		auto res = load(it->second, *value, dbg);
+		if (res == conv_result::failed || res == conv_result::opt) {
+			value = std::nullopt;
+		}
+		append_name(res, key, dbg);
+		return res;
+	}
+
 	inline conv_result load(map const& src,
 	                        string const& key,
 	                        LoadableJsonValue auto& value,
@@ -148,6 +181,17 @@ namespace json {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
 		auto res = load(it->second, value, dbg);
+		append_name(res, key, dbg);
+		return res;
+	}
+
+	inline conv_result load_zero(map const& src,
+	                        string const& key,
+	                        LoadableJsonValue auto& value,
+	                        std::string& dbg) {
+		auto it = src.find(key);
+		if (it == src.end()) return conv_result::opt;
+		auto res = load_zero(it->second, value, dbg);
 		append_name(res, key, dbg);
 		return res;
 	}
