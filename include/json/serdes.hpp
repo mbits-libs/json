@@ -82,7 +82,7 @@ namespace json {
 	}
 
 	template <std::integral Int>
-	inline conv_result load_zero(node const& src, Int& val, std::string& dbg) {
+	inline conv_result load_zero(node const& src, Int& val, std::string&) {
 		auto const data = cast<long long>(src);
 		if (!data) return conv_result::opt;
 		val = static_cast<Int>(*data);
@@ -110,7 +110,7 @@ namespace json {
 
 	inline conv_result load_zero(node const& src,
 	                             std::chrono::sys_seconds& val,
-	                             std::string& dbg) {
+	                             std::string&) {
 		auto const data = cast<long long>(src);
 		if (!data) return conv_result::opt;
 		val = std::chrono::sys_seconds{std::chrono::seconds{*data}};
