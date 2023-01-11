@@ -180,7 +180,7 @@ namespace json {
 	                        std::string& dbg) {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
-		auto res = load(it->second, value, dbg);
+		auto res = json::load(it->second, value, dbg);
 		append_name(res, key, dbg);
 		return res;
 	}
@@ -191,7 +191,7 @@ namespace json {
 	                             std::string& dbg) {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
-		auto res = load_zero(it->second, value, dbg);
+		auto res = json::load_zero(it->second, value, dbg);
 		append_name(res, key, dbg);
 		return res;
 	}
@@ -203,7 +203,7 @@ namespace json {
 	                              std::string& dbg) {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
-		auto res = load_multi<Kind...>(it->second, value, dbg);
+		auto res = json::load_multi<Kind...>(it->second, value, dbg);
 		append_name(res, key, dbg);
 		return res;
 	}
@@ -217,7 +217,7 @@ namespace json {
 		value.reserve(src.size());
 		for (auto& node_item : src) {
 			value.push_back({});
-			auto const res = load(node_item, value.back(), dbg);
+			auto const res = json::load(node_item, value.back(), dbg);
 			if (res == conv_result::failed || res == conv_result::opt)
 				value.pop_back();
 			if (!is_ok(res)) result = res;
@@ -235,7 +235,7 @@ namespace json {
 		if (it == src.end()) return conv_result::opt;
 		auto const arr = cast<array>(it->second);
 		if (!arr) return conv_result::opt;
-		auto res = load(*arr, value, dbg);
+		auto res = json::load(*arr, value, dbg);
 		append_name(res, key, dbg);
 		return res;
 	}
@@ -248,7 +248,7 @@ namespace json {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
 		auto const arr = cast<array>(it->second);
-		if (arr) return load(*arr, value, dbg);
+		if (arr) return json::load(*arr, value, dbg);
 		value.push_back({});
 		auto const res = load(it->second, value.back(), dbg);
 		if (res == conv_result::failed || res == conv_result::opt)
@@ -343,7 +343,7 @@ namespace json {
 		if (values.empty()) return;
 		json::map result{};
 		for (auto const& [subkey, value] : values) {
-			store(result, subkey, value);
+			json::store(result, subkey, value);
 		}
 		if (result.empty()) return;
 		dst[{key.data(), key.size()}] = std::move(result);
