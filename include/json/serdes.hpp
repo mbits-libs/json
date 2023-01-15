@@ -48,6 +48,16 @@ namespace json {
 	}
 	inline string const& to_json(string const& val) { return val; }
 
+	inline string to_json(string_view val) { return {val.data(), val.size()}; }
+
+	inline string to_json(std::string const& val) {
+		return {reinterpret_cast<char8_t const*>(val.data()), val.size()};
+	}
+
+	inline string to_json(std::string_view val) {
+		return {reinterpret_cast<char8_t const*>(val.data()), val.size()};
+	}
+
 	inline conv_result load(node const& src,
 	                        LoadsJson auto& obj,
 	                        std::string& dbg) {
@@ -128,10 +138,23 @@ namespace json {
 		return conv_result::ok;
 	}
 
+	inline conv_result load(node const& src,
+	                        std::string& val,
+	                        std::string& dbg) {
+		auto const data = cast<string>(src);
+		if (!data) return conv_result::opt;
+		if (data->empty()) {
+			dbg.append("\n- Loading an empty string value"sv);
+			return conv_result::updated;
+		}
+		val.assign(reinterpret_cast<char const*>(data->data()), data->size());
+		return conv_result::ok;
+	}
+
 	template <typename T>
-	concept LoadableJsonValue =
-	    LoadsJson<T> || LoadsJsonRaw<T> || std::integral<T> ||
-	    std::same_as<T, std::chrono::sys_seconds> || std::same_as<T, string>;
+	concept LoadableJsonValue = LoadsJson<T> || LoadsJsonRaw<T> ||
+	    std::integral<T> || std::same_as<T, std::chrono::sys_seconds> ||
+	    std::same_as<T, string> || std::same_as<T, std::string>;
 
 	inline void append_name(conv_result res,
 	                        string const& key,
