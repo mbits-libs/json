@@ -1075,7 +1075,7 @@ namespace json {
 				for (auto c : s) {
 					switch (c) {
 						default:
-							if (std::iscntrl(static_cast<unsigned char>(c)))
+							if (static_cast<unsigned char>(c) <= 0x1F)
 								write_control(c);
 							else
 								printer.write(c);
