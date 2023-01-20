@@ -173,7 +173,7 @@ namespace json {
 		auto it = src.find(key);
 		if (it == src.end()) return conv_result::opt;
 		value = Payload{};
-		auto res = load(it->second, *value, dbg);
+		auto res = json::load(it->second, *value, dbg);
 		if (res == conv_result::failed || res == conv_result::opt) {
 			value = std::nullopt;
 		}
@@ -307,7 +307,7 @@ namespace json {
 	inline void store(map& dst,
 	                  string_view const& key,
 	                  std::optional<T> const& value) {
-		if (value) store(dst, key, *value);
+		if (value) json::store(dst, key, *value);
 	}
 
 	template <JsonStorableValue T>
