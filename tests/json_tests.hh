@@ -24,6 +24,7 @@ namespace json::testing {
 		        mk_array10(mk_array10(std::forward<Items>(items)...))))))))));
 	}
 
+	// clang-format off
 	node_testcase const github_com_nst_JSONTestSuite[] = {
 		{
 			"i_number_double_huge_neg_exp"sv,
@@ -1417,5 +1418,6 @@ namespace json::testing {
 			json::array{},
 		},
 	};
+	// clang-format on
 }  // namespace json::testing
 #pragma once
