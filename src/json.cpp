@@ -115,24 +115,7 @@ namespace json {
 				++it;
 		}
 
-		struct reader_state;
-		enum class reader { push, replace };
-		struct reader_result {
-			std::variant<std::monostate,
-			             std::unique_ptr<reader_state>,
-			             json::node>
-			    result{};
-			reader result_mode{reader::push};
-
-			reader_result() = default;
-			reader_result(reader result_mode) : result_mode{result_mode} {}
-			reader_result(std::unique_ptr<reader_state> next_reader,
-			              reader result_mode = reader::push)
-			    : result{std::move(next_reader)}, result_mode{result_mode} {}
-			reader_result(json::node&& result,
-			              reader result_mode = reader::replace)
-			    : result{std::move(result)}, result_mode{result_mode} {}
-		};
+		struct reader_result;
 
 		struct
 		    reader_state {  // NOLINT(cppcoreguidelines-special-member-functions)
@@ -144,13 +127,9 @@ namespace json {
 
 		protected:
 			template <typename Reader>
-			static reader_result push() {
-				return {std::make_unique<Reader>()};
-			}
+			static inline reader_result push();
 			template <typename Reader>
-			static reader_result replace() {
-				return {std::make_unique<Reader>(), reader::replace};
-			}
+			static inline reader_result replace();
 			static inline reader_result read_value();
 
 			/*
@@ -195,6 +174,34 @@ namespace json {
 			    stage  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 			    {before_loop};
 		};
+
+		enum class reader { push, replace };
+
+		struct reader_result {
+			std::variant<std::monostate,
+			             std::unique_ptr<reader_state>,
+			             json::node>
+			    result{};
+			reader result_mode{reader::push};
+
+			reader_result() = default;
+			reader_result(reader result_mode) : result_mode{result_mode} {}
+			reader_result(std::unique_ptr<reader_state> next_reader,
+			              reader result_mode = reader::push)
+			    : result{std::move(next_reader)}, result_mode{result_mode} {}
+			reader_result(json::node&& result,
+			              reader result_mode = reader::replace)
+			    : result{std::move(result)}, result_mode{result_mode} {}
+		};
+
+		template <typename Reader>
+		reader_result reader_state::push() {
+			return {std::make_unique<Reader>()};
+		}
+		template <typename Reader>
+		reader_result reader_state::replace() {
+			return {std::make_unique<Reader>(), reader::replace};
+		}
 
 		class value_reader final : public reader_state {
 		public:
