@@ -264,19 +264,19 @@ namespace json {
 	inline constexpr write_config tab{
 	    .indent{u8"\t"sv},
 	    .separators{.item = u8","sv, .key = u8": "sv, .alt_item = u8", "sv},
-	    .inline_single_item{true},
+	    .inline_single_item = true,
 	};
 
 	inline constexpr write_config two_spaces{
 	    .indent{2},
 	    .separators{.item = u8","sv, .key = u8": "sv, .alt_item = u8", "sv},
-	    .inline_single_item{true},
+	    .inline_single_item = true,
 	};
 
 	inline constexpr write_config four_spaces{
 	    .indent{4},
 	    .separators{.item = u8","sv, .key = u8": "sv, .alt_item = u8", "sv},
-	    .inline_single_item{true},
+	    .inline_single_item = true,
 	};
 
 	void write_json(output&,
