@@ -79,7 +79,7 @@ namespace json {
 #if defined(__APPLE__) && defined(__clang__)
 #define NODE_TYPE_TMPLT      \
 	template <typename Kind> \
-	requires NodeType<Kind>
+	    requires NodeType<Kind>
 #else
 #define NODE_TYPE_TMPLT template <NodeType Kind>
 #endif
@@ -233,10 +233,11 @@ namespace json {
 		return cast_from_json<Kind>(*value, path);
 	}
 
-	enum class read_mode { strict, ECMA };
+	enum class read_mode { strict, ECMA, serialized };
 	node read_json(string_view text,
 	               string_view skip = {},
-	               read_mode mode = read_mode::strict);
+	               read_mode mode = read_mode::strict,
+	               size_t* read = nullptr);
 
 	struct output {
 		using byte_type = string_view::value_type;

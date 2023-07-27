@@ -1160,7 +1160,10 @@ namespace json {
 		};
 	}  // namespace
 
-	node read_json(string_view text, string_view skip, read_mode mode) {
+	node read_json(string_view text,
+	               string_view skip,
+	               read_mode mode,
+	               size_t* read) {
 		if (!skip.empty() && text.substr(0, skip.size()) == skip)
 			text = text.substr(skip.size());
 
@@ -1194,6 +1197,10 @@ namespace json {
 		if (mode == read_mode::strict) {
 			skip_ws(it, text.end(), mode);
 			if (it != text.end()) return {};
+		} else if (mode == read_mode::serialized && read) {
+			skip_ws(it, text.end(), mode);
+			auto const difference = std::distance(text.begin(), it);
+			*read = static_cast<size_t>(difference);
 		}
 
 		return value;
