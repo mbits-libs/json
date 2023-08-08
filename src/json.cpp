@@ -331,7 +331,7 @@ namespace json {
 					case has_value:
 						if (!val.index()) return {};
 						{
-							auto innerIt = result.find(current_key_);
+							auto innerIt = result.lower_bound(current_key_);
 							if (innerIt != result.end() &&
 							    innerIt->first == current_key_) {
 								innerIt->second = std::move(val);
@@ -875,7 +875,7 @@ namespace json {
 			bool operator()(map const& values) noexcept {
 				if (!consume(2)) return false;
 				bool first = true;
-				for (auto const& [key, value] : values) {
+				for (auto const& key : values.keys()) {
 					if (first) {
 						first = false;
 					} else {
@@ -884,7 +884,7 @@ namespace json {
 
 					if (!(*this)(key)) return false;
 					if (!consume(2)) return false;
-					if (!(*this)(value)) return false;
+					if (!(*this)(values.find(key)->second)) return false;
 				}
 				return true;
 			}
@@ -946,7 +946,7 @@ namespace json {
 				if (force_one_line || size_judge{}(values)) {
 					printer.write('{');
 					bool first = true;
-					for (auto const& [key, value] : values) {
+					for (auto const& key : values.keys()) {
 						if (first)
 							first = false;
 						else
@@ -954,7 +954,8 @@ namespace json {
 
 						write_string(key);
 						printer.write(config.separators.key);
-						writer{printer, config, indent_size, true}.write(value);
+						writer{printer, config, indent_size, true}.write(
+						    values.find(key)->second);
 					}
 					printer.write('}');
 					return;
@@ -966,7 +967,7 @@ namespace json {
 				}
 				printer.write('{');
 				if (values.size() == 1 && config.inline_single_item) {
-					auto const& [key, value] = *values.begin();
+					auto const& [key, value] = values.front();
 					write_string(key);
 					printer.write(config.separators.key);
 					writer{printer, config, indent_size}.write(value);
@@ -974,7 +975,7 @@ namespace json {
 					return;
 				}
 				bool first = true;
-				for (auto const& [key, value] : values) {
+				for (auto const& key : values.keys()) {
 					if (first)
 						first = false;
 					else
@@ -984,7 +985,8 @@ namespace json {
 					deeper();
 					write_string(key);
 					printer.write(config.separators.key);
-					writer{printer, config, indent_size + 1}.write(value);
+					writer{printer, config, indent_size + 1}.write(
+					    values.find(key)->second);
 				}
 				indent();
 				printer.write('}');

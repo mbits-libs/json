@@ -5,6 +5,7 @@
 
 #include <map>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -26,15 +27,89 @@ namespace json {
 	using string = std::u8string;
 	using string_view = std::u8string_view;
 
+	template <typename Value>
+	struct ordered_map {
+		std::map<string, Value> const& items() const noexcept { return tree_; }
+		std::span<string const> keys() const noexcept { return order_; }
+
+		bool empty() const noexcept { return tree_.empty(); }
+		size_t size() const noexcept { return tree_.size(); }
+		auto set(string const& key, Value&& value) {
+			auto it = lower_bound(key);
+			if (it != end() && it->first == key) {
+				it->second = std::move(value);
+			} else {
+				insert(it, {std::move(key), std::move(value)});
+			}
+		}
+
+		auto lower_bound(string const& key) { return tree_.lower_bound(key); }
+		auto lower_bound(string const& key) const {
+			return tree_.lower_bound(key);
+		}
+
+		auto find(string const& key) { return tree_.find(key); }
+		auto find(string const& key) const { return tree_.find(key); }
+
+		auto end() noexcept { return tree_.end(); }
+		auto end() const noexcept { return tree_.end(); }
+
+		auto& front() noexcept { return *tree_.begin(); }
+		auto const& front() const noexcept { return *tree_.begin(); }
+
+		auto insert(std::map<string, Value>::const_iterator hint,
+		            std::map<string, Value>::value_type&& value) {
+			order_.push_back(value.first);
+			return tree_.insert(hint, std::move(value));
+		}
+
+		auto insert(std::map<string, Value>::const_iterator hint,
+		            std::map<string, Value>::value_type const& value) {
+			order_.push_back(value.first);
+			return tree_.insert(hint, value);
+		}
+
+		auto insert_at_front(std::map<string, Value>::const_iterator hint,
+		                     std::map<string, Value>::value_type&& value) {
+			order_.insert(order_.begin(), value.first);
+			return tree_.insert(hint, std::move(value));
+		}
+
+		auto insert_at_front(std::map<string, Value>::const_iterator hint,
+		                     std::map<string, Value>::value_type const& value) {
+			order_.insert(order_.begin(), value.first);
+			return tree_.insert(hint, value);
+		}
+
+		auto insert_after(string const& pos, std::map<string, Value>::const_iterator hint,
+		                     std::map<string, Value>::value_type&& value) {
+			auto it = std::find(order_.begin(), order_.end(), pos);
+			order_.insert(it, value.first);
+			return tree_.insert(hint, std::move(value));
+		}
+
+		auto insert_after(string const& pos,
+		                  std::map<string, Value>::const_iterator hint,
+		                     std::map<string, Value>::value_type const& value) {
+			auto it = std::find(order_.begin(), order_.end(), pos);
+			order_.insert(it, value.first);
+			return tree_.insert(hint, value);
+		}
+
+	private:
+		std::map<string, Value> tree_{};
+		std::vector<string> order_{};
+	};
+
 	struct node : std::variant<std::monostate,
 	                           std::nullptr_t,
 	                           string,
 	                           long long,
 	                           double,
 	                           bool,
-	                           std::map<string, node>,
+	                           ordered_map<node>,
 	                           std::vector<node>> {
-		using map_type = std::map<string, node>;
+		using map_type = ordered_map<node>;
 		using vector_type = std::vector<node>;
 
 		using base_type = std::variant<std::monostate,
@@ -59,7 +134,7 @@ namespace json {
 		base_type const& base() const { return *this; }
 	};
 
-	using map = std::map<string, node>;
+	using map = ordered_map<node>;
 	using array = std::vector<node>;
 
 	template <typename Arg, typename... List>
