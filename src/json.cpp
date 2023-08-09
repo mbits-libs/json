@@ -825,7 +825,7 @@ namespace json {
 		}
 
 		struct size_judge {
-			size_t allowed_space{80};  // NOLINT
+			size_t allowed_space;
 
 			template <typename T>
 			bool operator()(T const&) noexcept {
@@ -943,7 +943,7 @@ namespace json {
 			void operator()(string const& value) const { write_string(value); }
 
 			void operator()(map const& values) const {
-				if (force_one_line || size_judge{}(values)) {
+				if (force_one_line || size_judge{config.horiz_space}(values)) {
 					printer.write('{');
 					bool first = true;
 					for (auto const& key : values.keys()) {
@@ -993,7 +993,7 @@ namespace json {
 			}
 
 			void operator()(array const& values) const {
-				if (force_one_line || size_judge{}(values)) {
+				if (force_one_line || size_judge{config.horiz_space}(values)) {
 					printer.write('[');
 					bool first = true;
 					for (auto const& value : values) {

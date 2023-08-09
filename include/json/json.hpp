@@ -81,8 +81,9 @@ namespace json {
 			return tree_.insert(hint, value);
 		}
 
-		auto insert_after(string const& pos, std::map<string, Value>::const_iterator hint,
-		                     std::map<string, Value>::value_type&& value) {
+		auto insert_after(string const& pos,
+		                  std::map<string, Value>::const_iterator hint,
+		                  std::map<string, Value>::value_type&& value) {
 			auto it = std::find(order_.begin(), order_.end(), pos);
 			order_.insert(it, value.first);
 			return tree_.insert(hint, std::move(value));
@@ -90,7 +91,7 @@ namespace json {
 
 		auto insert_after(string const& pos,
 		                  std::map<string, Value>::const_iterator hint,
-		                     std::map<string, Value>::value_type const& value) {
+		                  std::map<string, Value>::value_type const& value) {
 			auto it = std::find(order_.begin(), order_.end(), pos);
 			order_.insert(it, value.first);
 			return tree_.insert(hint, value);
@@ -154,7 +155,7 @@ namespace json {
 #if defined(__APPLE__) && defined(__clang__)
 #define NODE_TYPE_TMPLT      \
 	template <typename Kind> \
-	    requires NodeType<Kind>
+	requires NodeType<Kind>
 #else
 #define NODE_TYPE_TMPLT template <NodeType Kind>
 #endif
@@ -329,6 +330,12 @@ namespace json {
 			std::u8string_view alt_item{item};
 		} separators{};
 		bool inline_single_item{};
+		size_t horiz_space{80};
+		constexpr write_config with_horiz_space(size_t allowed) const noexcept {
+			auto copy = *this;
+			copy.horiz_space = allowed;
+			return copy;
+		}
 	};
 
 	inline constexpr write_config concise{
