@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <map>
 #include <optional>
 #include <span>
@@ -155,7 +156,7 @@ namespace json {
 #if defined(__APPLE__) && defined(__clang__)
 #define NODE_TYPE_TMPLT      \
 	template <typename Kind> \
-	requires NodeType<Kind>
+	    requires NodeType<Kind>
 #else
 #define NODE_TYPE_TMPLT template <NodeType Kind>
 #endif
