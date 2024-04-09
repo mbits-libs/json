@@ -52,50 +52,69 @@ namespace json {
 		auto find(string const& key) { return tree_.find(key); }
 		auto find(string const& key) const { return tree_.find(key); }
 
+		auto erase(string const& key) noexcept {
+			auto tree_it = tree_.find(key);
+			auto key_it = std::find(order_.begin(), order_.end(), key);
+			if (tree_it != tree_.end()) tree_.erase(tree_it);
+			if (key_it != order_.end()) order_.erase(key_it);
+		}
+
 		auto end() noexcept { return tree_.end(); }
 		auto end() const noexcept { return tree_.end(); }
 
 		auto& front() noexcept { return *tree_.begin(); }
 		auto const& front() const noexcept { return *tree_.begin(); }
 
-		auto insert(std::map<string, Value>::const_iterator hint,
-		            std::map<string, Value>::value_type&& value) {
+		auto insert(typename std::map<string, Value>::const_iterator hint,
+		            typename std::map<string, Value>::value_type&& value) {
 			order_.push_back(value.first);
 			return tree_.insert(hint, std::move(value));
 		}
 
-		auto insert(std::map<string, Value>::const_iterator hint,
-		            std::map<string, Value>::value_type const& value) {
+		auto insert(typename std::map<string, Value>::const_iterator hint,
+		            typename std::map<string, Value>::value_type const& value) {
 			order_.push_back(value.first);
 			return tree_.insert(hint, value);
 		}
 
-		auto insert_at_front(std::map<string, Value>::const_iterator hint,
-		                     std::map<string, Value>::value_type&& value) {
+		auto insert_at_front(
+		    typename std::map<string, Value>::const_iterator hint,
+		    typename std::map<string, Value>::value_type&& value) {
 			order_.insert(order_.begin(), value.first);
 			return tree_.insert(hint, std::move(value));
 		}
 
-		auto insert_at_front(std::map<string, Value>::const_iterator hint,
-		                     std::map<string, Value>::value_type const& value) {
+		auto insert_at_front(
+		    typename std::map<string, Value>::const_iterator hint,
+		    typename std::map<string, Value>::value_type const& value) {
 			order_.insert(order_.begin(), value.first);
 			return tree_.insert(hint, value);
 		}
 
-		auto insert_after(string const& pos,
-		                  std::map<string, Value>::const_iterator hint,
-		                  std::map<string, Value>::value_type&& value) {
+		auto insert_after(
+		    string const& pos,
+		    typename std::map<string, Value>::const_iterator hint,
+		    typename std::map<string, Value>::value_type&& value) {
 			auto it = std::find(order_.begin(), order_.end(), pos);
 			order_.insert(it, value.first);
 			return tree_.insert(hint, std::move(value));
 		}
 
-		auto insert_after(string const& pos,
-		                  std::map<string, Value>::const_iterator hint,
-		                  std::map<string, Value>::value_type const& value) {
+		auto insert_after(
+		    string const& pos,
+		    typename std::map<string, Value>::const_iterator hint,
+		    typename std::map<string, Value>::value_type const& value) {
 			auto it = std::find(order_.begin(), order_.end(), pos);
 			order_.insert(it, value.first);
 			return tree_.insert(hint, value);
+		}
+
+		bool operator==(ordered_map const& other) const noexcept {
+			return tree_ == other.tree_;
+		}
+
+		auto operator<=>(ordered_map const& other) const noexcept {
+			return tree_ <=> other.tree_;
 		}
 
 	private:
