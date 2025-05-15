@@ -345,10 +345,10 @@ namespace json {
 		if constexpr (JsonNodeValue<T>) {
 			auto v = to_json(value);
 			if (!std::holds_alternative<std::monostate>(v)) {
-				dst[{key.data(), key.size()}] = std::move(v);
+				dst.set({key.data(), key.size()}, std::move(v));
 			}
 		} else {
-			dst[{key.data(), key.size()}] = to_json(value);
+			dst.set({key.data(), key.size()}, to_json(value));
 		}
 	}
 
@@ -387,7 +387,7 @@ namespace json {
 			store_push(result, value);
 		}
 		if (result.empty()) return;
-		dst[{key.data(), key.size()}] = std::move(result);
+		dst.set({key.data(), key.size()}, std::move(result));
 	}
 
 	template <JsonStorableValue T>
@@ -402,9 +402,9 @@ namespace json {
 		}
 		if (result.empty()) return;
 		if (result.size() == 1) {
-			dst[{key.data(), key.size()}] = std::move(result.front());
+			dst.set({key.data(), key.size()}, std::move(result.front()));
 		} else {
-			dst[{key.data(), key.size()}] = std::move(result);
+			dst.set({key.data(), key.size()}, std::move(result));
 		}
 	}
 
@@ -418,7 +418,7 @@ namespace json {
 			json::store(result, subkey, value);
 		}
 		if (result.empty()) return;
-		dst[{key.data(), key.size()}] = std::move(result);
+		dst.set({key.data(), key.size()}, std::move(result));
 	}
 
 }  // namespace json
