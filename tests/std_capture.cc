@@ -2,7 +2,11 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "std_capture.hh"
+#include <fcntl.h>
+#include <cerrno>
+#include <chrono>
 #include <cstdint>
+#include <cstdio>
 #ifdef _MSC_VER
 #include <io.h>
 #define popen _popen
@@ -19,10 +23,6 @@ using ssize_t = intptr_t;
 #else
 #include <unistd.h>
 #endif
-#include <fcntl.h>
-#include <cerrno>
-#include <chrono>
-#include <cstdio>
 
 using namespace std::literals;
 

@@ -30,6 +30,23 @@ namespace json {
 
 	template <typename Value>
 	struct ordered_map {
+		ordered_map() = default;
+		ordered_map(ordered_map const&) = default;
+		ordered_map& operator=(ordered_map const&) = default;
+		ordered_map(ordered_map&&) = default;
+		ordered_map& operator=(ordered_map&&) = default;
+
+		using tree_map_t = std::map<string, Value>;
+		using tree_map_value_t = tree_map_t::value_type;
+
+		ordered_map(std::initializer_list<tree_map_value_t> tree_list)
+		    : tree_{tree_list} {
+			order_.reserve(tree_list.size());
+			for (auto const& [key, _] : tree_list) {
+				order_.push_back(key);
+			}
+		}
+
 		std::map<string, Value> const& items() const noexcept { return tree_; }
 		std::span<string const> keys() const noexcept { return order_; }
 
@@ -118,7 +135,7 @@ namespace json {
 		}
 
 	private:
-		std::map<string, Value> tree_{};
+		tree_map_t tree_{};
 		std::vector<string> order_{};
 	};
 

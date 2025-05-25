@@ -1160,12 +1160,12 @@ namespace json::testing {
 		{
 			"y_string_accepted_surrogate_pair"sv,
 			u8"[\"\\uD801\\udc37\"]"sv,
-			json::array{u8"\uFFFD\uFFFD",},
+			json::array{u8"\U00010437",},
 		},
 		{
 			"y_string_accepted_surrogate_pairs"sv,
 			u8"[\"\\ud83d\\ude39\\ud83d\\udc8d\"]"sv,
-			json::array{u8"\uFFFD\uFFFD\uFFFD\uFFFD",},
+			json::array{u8"\U0001f639\U0001f48d",},
 		},
 		{
 			"y_string_allowed_escapes"sv,
@@ -1270,7 +1270,7 @@ namespace json::testing {
 		{
 			"y_string_surrogates_U+1D11E_MUSICAL_SYMBOL_G_CLEF"sv,
 			u8"[\"\\uD834\\uDd1e\"]"sv,
-			json::array{u8"\uFFFD\uFFFD",},
+			json::array{u8"\U0001d11e",},
 		},
 		{
 			"y_string_three-byte-utf-8"sv,

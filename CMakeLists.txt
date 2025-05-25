@@ -92,6 +92,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_library(json STATIC
     src/json.cpp
+    src/string_reader.cpp
     include/json/json.hpp
     include/json/serdes.hpp)
 set_target_properties(json PROPERTIES

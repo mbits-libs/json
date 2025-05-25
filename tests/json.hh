@@ -332,7 +332,7 @@ namespace json::testing {
 				    if (value.find(u8'\000') != std::string::npos) out << "s";
 			    } else if constexpr (std::is_same_v<type, json::map>) {
 				    out << "json::map{";
-				    for (auto const& [fld, subvalue] : value) {
+				    for (auto const& [fld, subvalue] : value.items()) {
 					    out << '{' << cxx_u8string{fld} << ',' << subvalue
 					        << "},";
 				    }
@@ -376,7 +376,7 @@ namespace json::testing {
 				    if constexpr (std::is_same_v<type, json::map>) {
 					    ASSERT_EQ(expected.size(), actual.size())
 					        << "Path: " << cxx_u8string{path};
-					    for (auto const& [fld, exp_value] : expected) {
+					    for (auto const& [fld, exp_value] : expected.items()) {
 						    auto const subpath = path + fld + u8"/";
 						    auto it = actual.find(fld);
 						    ASSERT_NE(it, actual.end())
