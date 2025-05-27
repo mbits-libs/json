@@ -7,7 +7,6 @@
 #include <iostream>
 #include <limits>
 #include <memory>
-#include <print>
 #include <stack>
 #include <json/json.hpp>
 
@@ -224,7 +223,6 @@ namespace json {
 		while (it != end && in_string) {
 			if (in_escape) {
 				if (*it != 'u' && lead) {
-					std::print("cleaning 0x{:x}\n", *lead);
 					encode(UNI_REPLACEMENT_CHAR, result);
 					lead = std::nullopt;
 				}
@@ -340,8 +338,6 @@ namespace json {
 						return {};
 
 					if (lead) {
-						std::print("cleaning 0x{:x}, pushing '{}'\n", *lead,
-						           (char)*it);
 						encode(UNI_REPLACEMENT_CHAR, result);
 						lead = std::nullopt;
 					}
