@@ -433,13 +433,6 @@ namespace json {
 			return INV_HEX;
 		}
 
-		unsigned hex_digit(iterator& it, iterator const& end) {
-			if (it == end) return INV_HEX;
-			auto const val = hex_digit(*it);
-			if (val < INV_HEX) ++it;
-			return val;
-		}
-
 		node read_int(iterator& it,
 		              iterator const& end,
 		              unsigned base,
